@@ -15,6 +15,8 @@ import {
   BackgroundVariant,
   Panel,
   useReactFlow,
+  getNodesBounds,
+  getViewportForBounds,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { useWorkspaceStore } from '@/store/useWorkspaceStore';
@@ -23,9 +25,12 @@ import { CanvasToolbar } from '@/components/canvas/CanvasToolbar';
 import { CardDetailPanel } from '@/components/canvas/CardDetailPanel';
 import { CommandPalette } from '@/components/canvas/CommandPalette';
 import { CanvasContextMenu } from '@/components/canvas/CanvasContextMenu';
-import { ArrowLeft, Maximize, Undo2, Redo2, Plus } from 'lucide-react';
+import { ArrowLeft, Maximize, Undo2, Redo2, Plus, ImageDown, FileDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { CardType } from '@/types';
+import { toPng } from 'html-to-image';
+import { jsPDF } from 'jspdf';
+import { toast } from 'sonner';
 
 const nodeTypes: NodeTypes = {
   artifactCard: ArtifactCardNode,
@@ -179,6 +184,52 @@ const BoardCanvas = () => {
     setCtxMenu({ x: e.clientX, y: e.clientY });
   }, []);
 
+  const boardName = board?.name || 'board';
+
+  const exportToImage = useCallback(async () => {
+    const el = document.querySelector('.react-flow__viewport') as HTMLElement;
+    if (!el || nodes.length === 0) { toast.info('Нет карточек для экспорта'); return; }
+    toast.info('Экспорт PNG...');
+    try {
+      const bounds = getNodesBounds(nodes);
+      const pad = 80;
+      const w = bounds.width + pad * 2;
+      const h = bounds.height + pad * 2;
+      const vp = getViewportForBounds(bounds, w, h, 0.01, 10, pad);
+      const dataUrl = await toPng(el, {
+        width: w, height: h,
+        style: { width: `${w}px`, height: `${h}px`, transform: `translate(${vp.x}px, ${vp.y}px) scale(${vp.zoom})` },
+        backgroundColor: 'hsl(240, 30%, 5%)',
+      });
+      const a = document.createElement('a');
+      a.href = dataUrl; a.download = `${boardName}.png`; a.click();
+      toast.success('PNG сохранён');
+    } catch (err) { toast.error('Ошибка экспорта PNG'); console.error(err); }
+  }, [nodes, boardName]);
+
+  const exportToPdf = useCallback(async () => {
+    const el = document.querySelector('.react-flow__viewport') as HTMLElement;
+    if (!el || nodes.length === 0) { toast.info('Нет карточек для экспорта'); return; }
+    toast.info('Экспорт PDF...');
+    try {
+      const bounds = getNodesBounds(nodes);
+      const pad = 80;
+      const w = bounds.width + pad * 2;
+      const h = bounds.height + pad * 2;
+      const vp = getViewportForBounds(bounds, w, h, 0.01, 10, pad);
+      const dataUrl = await toPng(el, {
+        width: w, height: h,
+        style: { width: `${w}px`, height: `${h}px`, transform: `translate(${vp.x}px, ${vp.y}px) scale(${vp.zoom})` },
+        backgroundColor: 'hsl(240, 30%, 5%)',
+      });
+      const orientation = w > h ? 'landscape' : 'portrait';
+      const pdf = new jsPDF({ orientation, unit: 'px', format: [w, h] });
+      pdf.addImage(dataUrl, 'PNG', 0, 0, w, h);
+      pdf.save(`${boardName}.pdf`);
+      toast.success('PDF сохранён');
+    } catch (err) { toast.error('Ошибка экспорта PDF'); console.error(err); }
+  }, [nodes, boardName]);
+
   if (!board) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -206,6 +257,15 @@ const BoardCanvas = () => {
           {boardCards.length} карточек
         </span>
         <div className="flex-1" />
+        <Button variant="ghost" size="sm" className="h-8 gap-1 text-xs" onClick={exportToImage} title="Экспорт PNG">
+          <ImageDown className="w-3.5 h-3.5" />
+          PNG
+        </Button>
+        <Button variant="ghost" size="sm" className="h-8 gap-1 text-xs" onClick={exportToPdf} title="Экспорт PDF">
+          <FileDown className="w-3.5 h-3.5" />
+          PDF
+        </Button>
+        <div className="w-px h-5 bg-border" />
         <Button variant="ghost" size="icon" className="h-8 w-8" title="Командная палитра (Ctrl+K)" onClick={() => setCmdOpen(true)}>
           <span className="text-xs font-mono text-muted-foreground">⌘K</span>
         </Button>
