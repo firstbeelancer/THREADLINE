@@ -261,7 +261,88 @@ export function CardDetailPanel({ card, onClose, onUpdate, onDelete }: CardDetai
           </Field>
         )}
 
-        {/* Comment body */}
+        {/* PPTX slides */}
+        {card.type === 'pptx' && (
+          <Field label="Слайды">
+            <input
+              ref={slideFileRef}
+              type="file"
+              accept=".html,.htm"
+              multiple
+              onChange={(e) => {
+                const files = Array.from(e.target.files || []);
+                if (!files.length) return;
+                const existing: string[] = card.content?.slides || [];
+                let loaded = 0;
+                const newSlides: string[] = [];
+                files.forEach((file) => {
+                  const reader = new FileReader();
+                  reader.onload = (ev) => {
+                    newSlides.push(ev.target?.result as string);
+                    loaded++;
+                    if (loaded === files.length) {
+                      onUpdate({ content: { ...card.content, slides: [...existing, ...newSlides] } });
+                    }
+                  };
+                  reader.readAsText(file);
+                });
+              }}
+              className="hidden"
+            />
+            {(card.content?.slides as string[] || []).length > 0 && (
+              <div className="space-y-2 mb-2">
+                {(card.content.slides as string[]).map((_: string, i: number) => (
+                  <div key={i} className="rounded-[7px] overflow-hidden relative" style={{ border: '1px solid rgba(255,255,255,0.05)' }}>
+                    <iframe
+                      srcDoc={_}
+                      sandbox="allow-scripts"
+                      className="w-full border-0 pointer-events-none"
+                      style={{ height: 120, background: '#fff' }}
+                      title={`Slide ${i + 1}`}
+                    />
+                    <div className="absolute top-1 right-1 flex gap-1">
+                      <button
+                        onClick={() => {
+                          const slides = [...(card.content?.slides || [])];
+                          slides.splice(i, 1);
+                          onUpdate({ content: { ...card.content, slides } });
+                        }}
+                        className="w-5 h-5 flex items-center justify-center rounded text-[9px] cursor-pointer"
+                        style={{ background: 'rgba(0,0,0,0.7)', color: '#EF4444' }}
+                        title="Удалить слайд"
+                      >
+                        ×
+                      </button>
+                    </div>
+                    <div className="absolute bottom-1 left-1 text-[8px] font-mono px-1 py-px rounded" style={{ background: 'rgba(0,0,0,0.6)', color: 'rgba(255,255,255,0.5)' }}>
+                      {i + 1}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+            <UploadButton onClick={() => slideFileRef.current?.click()} label="Добавить слайды (HTML)" />
+            <div className="mt-1.5">
+              <Textarea
+                placeholder="Или вставьте HTML-код слайда..."
+                rows={4}
+                className="bg-[hsl(240,20%,9%)] border-[rgba(255,255,255,0.05)] resize-none font-mono text-[10.5px]"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+                    const val = (e.target as HTMLTextAreaElement).value.trim();
+                    if (val) {
+                      const existing: string[] = card.content?.slides || [];
+                      onUpdate({ content: { ...card.content, slides: [...existing, val] } });
+                      (e.target as HTMLTextAreaElement).value = '';
+                    }
+                  }
+                }}
+              />
+              <div className="text-[9px] mt-0.5" style={{ color: 'hsl(255,8%,40%)' }}>Ctrl+Enter — добавить слайд</div>
+            </div>
+          </Field>
+        )}
+
         {card.type === 'comment' && (
           <Field label="Комментарий">
             <Textarea
