@@ -1,10 +1,11 @@
 import type { Card } from '@/types';
 import { CARD_TYPE_CONFIG } from '@/types';
-import { X, Trash2, Tag, Upload, FileUp, Plus, Square, CheckSquare2 } from 'lucide-react';
+import { X, Trash2, Tag, Upload, FileUp, Plus, Square, CheckSquare2, Download, ClipboardCopy, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useState, useEffect, useRef } from 'react';
+import { toast } from 'sonner';
 
 interface CardDetailPanelProps {
   card: Card;
@@ -405,6 +406,34 @@ export function CardDetailPanel({ card, onClose, onUpdate, onDelete }: CardDetai
             />
             <Button variant="outline" size="sm" onClick={handleAddTag} className="h-8 px-2">
               <Tag className="w-3 h-3" />
+            </Button>
+          </div>
+        </Field>
+
+        {/* Download & Copy */}
+        <Field label="Действия">
+          <div className="flex gap-1.5">
+            <Button
+              variant="outline"
+              size="sm"
+              className="flex-1 gap-1 h-8 text-[10.5px]"
+              onClick={() => {
+                const content = getCardExportContent(card);
+                if (!content) { toast.info('Нет контента для копирования'); return; }
+                navigator.clipboard.writeText(content).then(() => toast.success('Скопировано в буфер'));
+              }}
+            >
+              <ClipboardCopy className="w-3 h-3" />
+              Копировать
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="flex-1 gap-1 h-8 text-[10.5px]"
+              onClick={() => downloadCardContent(card)}
+            >
+              <Download className="w-3 h-3" />
+              Скачать
             </Button>
           </div>
         </Field>
