@@ -126,7 +126,7 @@ export function Sidebar({ activeBoardId, onSelectBoard }: SidebarProps) {
         </div>
       </div>
 
-      <CreateBoardDialog open={dialogOpen} onOpenChange={setDialogOpen} />
+      <CreateBoardDialog open={dialogOpen} onOpenChange={setDialogOpen} onCreated={onSelectBoard} />
     </div>
   );
 }
