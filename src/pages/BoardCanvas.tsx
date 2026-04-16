@@ -184,6 +184,52 @@ const BoardCanvas = () => {
     setCtxMenu({ x: e.clientX, y: e.clientY });
   }, []);
 
+  const boardName = board?.name || 'board';
+
+  const exportToImage = useCallback(async () => {
+    const el = document.querySelector('.react-flow__viewport') as HTMLElement;
+    if (!el || nodes.length === 0) { toast.info('Нет карточек для экспорта'); return; }
+    toast.info('Экспорт PNG...');
+    try {
+      const bounds = getNodesBounds(nodes);
+      const pad = 80;
+      const w = bounds.width + pad * 2;
+      const h = bounds.height + pad * 2;
+      const vp = getViewportForBounds(bounds, w, h, 0.01, 10, pad);
+      const dataUrl = await toPng(el, {
+        width: w, height: h,
+        style: { width: `${w}px`, height: `${h}px`, transform: `translate(${vp.x}px, ${vp.y}px) scale(${vp.zoom})` },
+        backgroundColor: 'hsl(240, 30%, 5%)',
+      });
+      const a = document.createElement('a');
+      a.href = dataUrl; a.download = `${boardName}.png`; a.click();
+      toast.success('PNG сохранён');
+    } catch (err) { toast.error('Ошибка экспорта PNG'); console.error(err); }
+  }, [nodes, boardName]);
+
+  const exportToPdf = useCallback(async () => {
+    const el = document.querySelector('.react-flow__viewport') as HTMLElement;
+    if (!el || nodes.length === 0) { toast.info('Нет карточек для экспорта'); return; }
+    toast.info('Экспорт PDF...');
+    try {
+      const bounds = getNodesBounds(nodes);
+      const pad = 80;
+      const w = bounds.width + pad * 2;
+      const h = bounds.height + pad * 2;
+      const vp = getViewportForBounds(bounds, w, h, 0.01, 10, pad);
+      const dataUrl = await toPng(el, {
+        width: w, height: h,
+        style: { width: `${w}px`, height: `${h}px`, transform: `translate(${vp.x}px, ${vp.y}px) scale(${vp.zoom})` },
+        backgroundColor: 'hsl(240, 30%, 5%)',
+      });
+      const orientation = w > h ? 'landscape' : 'portrait';
+      const pdf = new jsPDF({ orientation, unit: 'px', format: [w, h] });
+      pdf.addImage(dataUrl, 'PNG', 0, 0, w, h);
+      pdf.save(`${boardName}.pdf`);
+      toast.success('PDF сохранён');
+    } catch (err) { toast.error('Ошибка экспорта PDF'); console.error(err); }
+  }, [nodes, boardName]);
+
   if (!board) {
     return (
       <div className="min-h-screen flex items-center justify-center">
