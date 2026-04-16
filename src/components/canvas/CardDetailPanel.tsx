@@ -348,6 +348,7 @@ export function CardDetailPanel({ card, onClose, onUpdate, onDelete }: CardDetai
           <TodoEditor card={card} onUpdate={onUpdate} />
         )}
 
+        {card.type === 'comment' && (
           <Field label="Комментарий">
             <Textarea
               value={card.content?.body || ''}
