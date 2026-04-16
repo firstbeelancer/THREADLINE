@@ -6,12 +6,12 @@ import { useWorkspaceStore } from '@/store/useWorkspaceStore';
 import {
   Sparkles, FileText, Image, Play, Code2, Presentation,
   FileType, Link2, Paperclip, Layers, MessageSquare,
-  Copy, Trash2, MoreHorizontal,
+  Copy, Trash2, MoreHorizontal, CheckSquare, Square, CheckSquare2,
 } from 'lucide-react';
 
 const iconMap: Record<string, React.ElementType> = {
   Sparkles, FileText, Image, Play, Code2, Presentation,
-  FileType, Link2, Paperclip, Layers, MessageSquare,
+  FileType, Link2, Paperclip, Layers, MessageSquare, CheckSquare,
 };
 
 const GLOW: Record<string, { color: string; soft: string; ring: string }> = {
@@ -26,6 +26,7 @@ const GLOW: Record<string, { color: string; soft: string; ring: string }> = {
   file:    { color: '#6B7280', soft: 'rgba(107,114,128,0.10)', ring: 'rgba(107,114,128,0.30)' },
   group:   { color: '#4B5563', soft: 'rgba(75,85,99,0.08)', ring: 'rgba(75,85,99,0.25)' },
   comment: { color: '#EAB308', soft: 'rgba(234,179,8,0.12)', ring: 'rgba(234,179,8,0.35)' },
+  todo:    { color: '#22C55E', soft: 'rgba(34,197,94,0.12)', ring: 'rgba(34,197,94,0.35)' },
 };
 
 /** PPTX slide preview — adapts layout based on card aspect ratio */
@@ -237,6 +238,25 @@ export const ArtifactCardNode = memo(({ data, id, selected }: NodeProps) => {
           </div>
         )}
         {card.type === 'pptx' && <PptxPreview card={card} glow={glow} />}
+        {card.type === 'todo' && (
+          <div className="mt-1 flex flex-col gap-[3px]">
+            {((card.content?.items as Array<{ text: string; done: boolean }>) || []).map((item, i) => (
+              <div key={i} className="flex items-center gap-[6px] px-1">
+                {item.done ? (
+                  <CheckSquare2 className="w-[12px] h-[12px] shrink-0" style={{ color: '#22C55E' }} />
+                ) : (
+                  <Square className="w-[12px] h-[12px] shrink-0" style={{ color: 'hsl(255,8%,40%)' }} />
+                )}
+                <span className={`text-[11px] leading-tight ${item.done ? 'line-through' : ''}`} style={{ color: item.done ? 'hsl(255,8%,40%)' : 'hsl(255,8%,62%)' }}>
+                  {item.text}
+                </span>
+              </div>
+            ))}
+            {((card.content?.items as Array<{ text: string; done: boolean }>) || []).length === 0 && (
+              <div className="text-[10px] italic" style={{ color: 'hsl(255,8%,40%)' }}>Нет задач</div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Footer */}

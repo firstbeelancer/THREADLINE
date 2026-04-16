@@ -1,6 +1,6 @@
 import type { Card } from '@/types';
 import { CARD_TYPE_CONFIG } from '@/types';
-import { X, Trash2, Tag, Upload, FileUp } from 'lucide-react';
+import { X, Trash2, Tag, Upload, FileUp, Plus, Square, CheckSquare2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -343,6 +343,11 @@ export function CardDetailPanel({ card, onClose, onUpdate, onDelete }: CardDetai
           </Field>
         )}
 
+        {/* To-Do items */}
+        {card.type === 'todo' && (
+          <TodoEditor card={card} onUpdate={onUpdate} />
+        )}
+
         {card.type === 'comment' && (
           <Field label="Комментарий">
             <Textarea
@@ -440,5 +445,77 @@ function UploadDropzone({ onClick, label }: { onClick: () => void; label: string
       <Upload className="w-5 h-5" />
       <span className="text-[10.5px]">{label}</span>
     </button>
+  );
+}
+
+interface TodoItem { text: string; done: boolean }
+
+function TodoEditor({ card, onUpdate }: { card: Card; onUpdate: (updates: Partial<Card>) => void }) {
+  const [newItem, setNewItem] = useState('');
+  const items: TodoItem[] = card.content?.items || [];
+
+  const toggle = (i: number) => {
+    const updated = items.map((item, idx) => idx === i ? { ...item, done: !item.done } : item);
+    onUpdate({ content: { ...card.content, items: updated } });
+  };
+
+  const remove = (i: number) => {
+    onUpdate({ content: { ...card.content, items: items.filter((_, idx) => idx !== i) } });
+  };
+
+  const add = () => {
+    if (!newItem.trim()) return;
+    onUpdate({ content: { ...card.content, items: [...items, { text: newItem.trim(), done: false }] } });
+    setNewItem('');
+  };
+
+  const doneCount = items.filter((i) => i.done).length;
+
+  return (
+    <Field label={`Задачи (${doneCount}/${items.length})`}>
+      {/* Progress bar */}
+      {items.length > 0 && (
+        <div className="h-1 rounded-full overflow-hidden mb-2" style={{ background: 'hsl(240, 20%, 9%)' }}>
+          <div className="h-full rounded-full transition-all" style={{ width: `${(doneCount / items.length) * 100}%`, background: '#22C55E' }} />
+        </div>
+      )}
+
+      <div className="space-y-1 mb-2">
+        {items.map((item, i) => (
+          <div key={i} className="flex items-center gap-2 group/item">
+            <button onClick={() => toggle(i)} className="shrink-0 cursor-pointer">
+              {item.done ? (
+                <CheckSquare2 className="w-[14px] h-[14px]" style={{ color: '#22C55E' }} />
+              ) : (
+                <Square className="w-[14px] h-[14px]" style={{ color: 'hsl(255,8%,40%)' }} />
+              )}
+            </button>
+            <span className={`text-[11px] flex-1 ${item.done ? 'line-through' : ''}`} style={{ color: item.done ? 'hsl(255,8%,40%)' : 'hsl(260, 20%, 92%)' }}>
+              {item.text}
+            </span>
+            <button
+              onClick={() => remove(i)}
+              className="opacity-0 group-hover/item:opacity-100 transition-opacity shrink-0 cursor-pointer"
+              style={{ color: 'hsl(255,8%,40%)' }}
+            >
+              <X className="w-3 h-3" />
+            </button>
+          </div>
+        ))}
+      </div>
+
+      <div className="flex gap-1">
+        <Input
+          value={newItem}
+          onChange={(e) => setNewItem(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && add()}
+          placeholder="Новая задача..."
+          className="bg-[hsl(240,20%,9%)] border-[rgba(255,255,255,0.05)] text-xs h-8"
+        />
+        <Button variant="outline" size="sm" onClick={add} className="h-8 px-2">
+          <Plus className="w-3 h-3" />
+        </Button>
+      </div>
+    </Field>
   );
 }

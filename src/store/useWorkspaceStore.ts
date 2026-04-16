@@ -50,6 +50,7 @@ const defaultCardSize: Record<CardType, { width: number; height: number }> = {
   file: { width: 240, height: 160 },
   group: { width: 400, height: 300 },
   comment: { width: 220, height: 140 },
+  todo: { width: 260, height: 220 },
 };
 
 export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
