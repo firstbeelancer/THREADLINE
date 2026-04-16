@@ -1,17 +1,17 @@
 import { CARD_TYPE_CONFIG, type CardType } from '@/types';
 import {
   Sparkles, FileText, Image, Play, Code2, Presentation,
-  FileType, Link2, Paperclip, Layers, MessageSquare,
+  FileType, Link2, Paperclip, Layers, MessageSquare, CheckSquare,
 } from 'lucide-react';
 
 const iconMap: Record<string, React.ElementType> = {
   Sparkles, FileText, Image, Play, Code2, Presentation,
-  FileType, Link2, Paperclip, Layers, MessageSquare,
+  FileType, Link2, Paperclip, Layers, MessageSquare, CheckSquare,
 };
 
 const menuItems: CardType[] = [
   'prompt', 'text', 'image', 'html', 'video',
-  'link', 'pdf', 'pptx', 'file', 'comment',
+  'link', 'pdf', 'pptx', 'file', 'todo', 'comment',
 ];
 
 interface CanvasContextMenuProps {
