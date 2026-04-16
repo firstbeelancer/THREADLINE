@@ -6,14 +6,14 @@ import { useWorkspaceStore } from '@/store/useWorkspaceStore';
 import {
   Sparkles, FileText, Image, Play, Code2, Presentation,
   FileType, Link2, Paperclip, Layers, MessageSquare,
-  Copy, Trash2, MoreHorizontal, CheckSquare, Square, CheckSquare2, Smile,
+  Copy, Trash2, MoreHorizontal, CheckSquare, Square, CheckSquare2, Smile, Mic,
 } from 'lucide-react';
 
 const QUICK_EMOJIS = ['👍', '❤️', '⭐', '🔥', '✅', '❌', '⚡', '💡', '🎯', '👀', '🏆', '💎'];
 
 const iconMap: Record<string, React.ElementType> = {
   Sparkles, FileText, Image, Play, Code2, Presentation,
-  FileType, Link2, Paperclip, Layers, MessageSquare, CheckSquare,
+  FileType, Link2, Paperclip, Layers, MessageSquare, CheckSquare, Mic,
 };
 
 const GLOW: Record<string, { color: string; soft: string; ring: string }> = {
@@ -29,6 +29,7 @@ const GLOW: Record<string, { color: string; soft: string; ring: string }> = {
   group:   { color: '#4B5563', soft: 'rgba(75,85,99,0.08)', ring: 'rgba(75,85,99,0.25)' },
   comment: { color: '#EAB308', soft: 'rgba(234,179,8,0.12)', ring: 'rgba(234,179,8,0.35)' },
   todo:    { color: '#22C55E', soft: 'rgba(34,197,94,0.12)', ring: 'rgba(34,197,94,0.35)' },
+  voice:   { color: '#EC4899', soft: 'rgba(236,72,153,0.12)', ring: 'rgba(236,72,153,0.35)' },
 };
 
 /** PPTX slide preview — adapts layout based on card aspect ratio */
@@ -251,6 +252,38 @@ export const ArtifactCardNode = memo(({ data, id, selected }: NodeProps) => {
           </div>
         )}
         {card.type === 'pptx' && <PptxPreview card={card} glow={glow} />}
+        {card.type === 'voice' && (
+          <div className="mt-1.5 flex flex-col gap-1.5">
+            {card.content?.audioUrl ? (
+              <audio
+                src={card.content.audioUrl}
+                controls
+                className="w-full h-[30px]"
+                style={{ filter: 'invert(0.85) hue-rotate(180deg)' }}
+                onClick={(e) => e.stopPropagation()}
+                onMouseDown={(e) => e.stopPropagation()}
+              />
+            ) : (
+              <div className="h-[40px] rounded-[7px] flex items-center justify-center gap-2" style={{ background: `linear-gradient(135deg, ${glow.soft}, hsl(240, 33%, 4%))` }}>
+                <Mic className="w-[18px] h-[18px] opacity-50" style={{ color: glow.color }} />
+                <span className="text-[10px]" style={{ color: 'hsl(255,8%,50%)' }}>Запишите или загрузите</span>
+              </div>
+            )}
+            {card.content?.transcript && (
+              <div
+                className="p-[8px] rounded-[6px] text-[10.5px] leading-relaxed line-clamp-4 italic"
+                style={{ background: 'hsl(240, 33%, 4%)', color: 'hsl(255,8%,72%)', borderLeft: `2px solid ${glow.color}` }}
+              >
+                «{card.content.transcript}»
+              </div>
+            )}
+            {card.content?.audioUrl && !card.content?.transcript && (
+              <div className="text-[9.5px] italic" style={{ color: 'hsl(255,8%,40%)' }}>
+                Транскрипт ещё не сделан — откройте карточку
+              </div>
+            )}
+          </div>
+        )}
         {card.type === 'todo' && (
           <div className="mt-1 flex flex-col gap-[3px]">
             {((card.content?.items as Array<{ text: string; done: boolean }>) || []).map((item, i) => (
