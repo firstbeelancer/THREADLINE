@@ -188,6 +188,7 @@ export const ArtifactCardNode = memo(({ data, id, selected }: NodeProps) => {
             </div>
           </div>
         )}
+        {card.type === 'pptx' && <PptxPreview card={card} glow={glow} />}
       </div>
 
       {/* Footer */}
