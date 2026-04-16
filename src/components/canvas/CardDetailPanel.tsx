@@ -1,6 +1,6 @@
 import type { Card } from '@/types';
 import { CARD_TYPE_CONFIG } from '@/types';
-import { X, Trash2, Tag, Upload, FileUp } from 'lucide-react';
+import { X, Trash2, Tag, Upload, FileUp, Plus, Square, CheckSquare2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -343,7 +343,11 @@ export function CardDetailPanel({ card, onClose, onUpdate, onDelete }: CardDetai
           </Field>
         )}
 
-        {card.type === 'comment' && (
+        {/* To-Do items */}
+        {card.type === 'todo' && (
+          <TodoEditor card={card} onUpdate={onUpdate} />
+        )}
+
           <Field label="Комментарий">
             <Textarea
               value={card.content?.body || ''}
