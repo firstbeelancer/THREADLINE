@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   ReactFlow,
@@ -14,13 +14,16 @@ import {
   type NodeTypes,
   BackgroundVariant,
   Panel,
+  useReactFlow,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { useWorkspaceStore } from '@/store/useWorkspaceStore';
 import { ArtifactCardNode } from '@/components/canvas/ArtifactCardNode';
 import { CanvasToolbar } from '@/components/canvas/CanvasToolbar';
 import { CardDetailPanel } from '@/components/canvas/CardDetailPanel';
-import { ArrowLeft } from 'lucide-react';
+import { CommandPalette } from '@/components/canvas/CommandPalette';
+import { CanvasContextMenu } from '@/components/canvas/CanvasContextMenu';
+import { ArrowLeft, Maximize, Undo2, Redo2, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { CardType } from '@/types';
 
@@ -36,6 +39,8 @@ const BoardCanvas = () => {
   const boardCards = store.getBoardCards(boardId || '');
   const boardConnections = store.getBoardConnections(boardId || '');
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
+  const [cmdOpen, setCmdOpen] = useState(false);
+  const [ctxMenu, setCtxMenu] = useState<{ x: number; y: number } | null>(null);
 
   const initialNodes: Node[] = useMemo(
     () =>
@@ -92,13 +97,14 @@ const BoardCanvas = () => {
 
   const onPaneClick = useCallback(() => {
     setSelectedCardId(null);
+    setCtxMenu(null);
   }, []);
 
   const handleAddCard = useCallback(
-    (type: CardType) => {
+    (type: CardType, screenX?: number, screenY?: number) => {
       if (!boardId) return;
-      const posX = 200 + Math.random() * 400;
-      const posY = 200 + Math.random() * 400;
+      const posX = (screenX ?? 200) + Math.random() * 100;
+      const posY = (screenY ?? 200) + Math.random() * 100;
       const cardId = store.createCard(boardId, type, posX, posY);
       const freshCards = useWorkspaceStore.getState().cards;
       const card = freshCards.find((c) => c.id === cardId);
@@ -127,6 +133,52 @@ const BoardCanvas = () => {
     [store, setNodes, setEdges, selectedCardId]
   );
 
+  // Keyboard shortcuts
+  useEffect(() => {
+    const isInput = () => {
+      const el = document.activeElement;
+      return el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || (el as HTMLElement).isContentEditable);
+    };
+
+    const handler = (e: KeyboardEvent) => {
+      // Command palette
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setCmdOpen((o) => !o);
+        return;
+      }
+      // Escape
+      if (e.key === 'Escape') {
+        setCmdOpen(false);
+        setSelectedCardId(null);
+        setCtxMenu(null);
+        return;
+      }
+      if (isInput() || cmdOpen) return;
+
+      // Delete
+      if ((e.key === 'Delete' || e.key === 'Backspace') && selectedCardId) {
+        e.preventDefault();
+        handleDeleteCard(selectedCardId);
+        return;
+      }
+      // Quick card creation
+      if (e.key === 'p') handleAddCard('prompt');
+      if (e.key === 't') handleAddCard('text');
+      if (e.key === 'h') handleAddCard('html');
+      if (e.key === 'i') handleAddCard('image');
+    };
+
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [selectedCardId, cmdOpen, handleAddCard, handleDeleteCard]);
+
+  // Context menu
+  const handleContextMenu = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    setCtxMenu({ x: e.clientX, y: e.clientY });
+  }, []);
+
   if (!board) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -143,20 +195,24 @@ const BoardCanvas = () => {
   const selectedCard = boardCards.find((c) => c.id === selectedCardId);
 
   return (
-    <div className="h-screen w-screen flex flex-col bg-canvas-bg">
+    <div className="h-screen w-screen flex flex-col" style={{ backgroundColor: 'hsl(240, 30%, 5%)' }}>
       {/* Top bar */}
-      <div className="h-12 border-b border-border bg-card flex items-center px-4 gap-3 shrink-0 z-10">
+      <div className="h-[52px] border-b border-border bg-card flex items-center px-4 gap-3 shrink-0 z-10">
         <Button variant="ghost" size="icon" onClick={() => navigate('/')} className="h-8 w-8">
           <ArrowLeft className="w-4 h-4" />
         </Button>
-        <h2 className="font-semibold text-sm truncate">{board.name}</h2>
+        <h2 className="font-display font-bold text-sm truncate">{board.name}</h2>
         <span className="text-xs text-muted-foreground">
           {boardCards.length} карточек
         </span>
+        <div className="flex-1" />
+        <Button variant="ghost" size="icon" className="h-8 w-8" title="Командная палитра (Ctrl+K)" onClick={() => setCmdOpen(true)}>
+          <span className="text-xs font-mono text-muted-foreground">⌘K</span>
+        </Button>
       </div>
 
       {/* Canvas */}
-      <div className="flex-1 relative flex">
+      <div className="flex-1 relative flex" onContextMenu={handleContextMenu}>
         <ReactFlow
           nodes={nodes}
           edges={edges}
@@ -175,16 +231,31 @@ const BoardCanvas = () => {
           className="flex-1"
           proOptions={{ hideAttribution: true }}
         >
-          <Background variant={BackgroundVariant.Dots} gap={20} size={1} color="hsl(220, 15%, 15%)" />
+          <Background variant={BackgroundVariant.Dots} gap={40} size={1} color="rgba(255,255,255,0.03)" />
           <Controls className="!bg-card !border-border !shadow-lg [&>button]:!bg-card [&>button]:!border-border [&>button]:!text-foreground [&>button:hover]:!bg-accent" />
           <MiniMap
             className="!bg-card !border-border"
-            nodeColor="hsl(220, 70%, 55%)"
-            maskColor="hsl(220, 20%, 7%, 0.7)"
+            nodeColor="hsl(160, 72%, 47%)"
+            maskColor="rgba(10,10,15,0.7)"
           />
           <Panel position="bottom-center">
             <CanvasToolbar onAddCard={handleAddCard} />
           </Panel>
+
+          {/* Empty state */}
+          {boardCards.length === 0 && (
+            <Panel position="top-center" className="mt-[30vh]">
+              <div className="text-center animate-fade-in">
+                <div className="w-16 h-16 rounded-2xl bg-accent flex items-center justify-center mx-auto mb-4">
+                  <Plus className="w-8 h-8 text-muted-foreground" />
+                </div>
+                <p className="text-muted-foreground text-sm mb-1">Добавьте первую карточку</p>
+                <p className="text-muted-foreground/60 text-xs">
+                  Используйте панель инструментов, ПКМ или клавиши P, T, H, I
+                </p>
+              </div>
+            </Panel>
+          )}
         </ReactFlow>
 
         {/* Detail Panel */}
@@ -211,6 +282,24 @@ const BoardCanvas = () => {
           />
         )}
       </div>
+
+      {/* Context menu */}
+      {ctxMenu && (
+        <CanvasContextMenu
+          x={ctxMenu.x}
+          y={ctxMenu.y}
+          onAddCard={(type) => handleAddCard(type)}
+          onClose={() => setCtxMenu(null)}
+        />
+      )}
+
+      {/* Command palette */}
+      <CommandPalette
+        open={cmdOpen}
+        onClose={() => setCmdOpen(false)}
+        onAddCard={(type) => handleAddCard(type)}
+        boardId={boardId}
+      />
     </div>
   );
 };
