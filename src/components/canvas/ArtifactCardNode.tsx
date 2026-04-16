@@ -1,7 +1,8 @@
-import { memo } from 'react';
-import { Handle, Position, type NodeProps } from '@xyflow/react';
+import { memo, useCallback } from 'react';
+import { Handle, Position, NodeResizer, type NodeProps, useReactFlow } from '@xyflow/react';
 import type { Card } from '@/types';
 import { CARD_TYPE_CONFIG } from '@/types';
+import { useWorkspaceStore } from '@/store/useWorkspaceStore';
 import {
   Sparkles, FileText, Image, Play, Code2, Presentation,
   FileType, Link2, Paperclip, Layers, MessageSquare,
@@ -12,15 +13,54 @@ const iconMap: Record<string, React.ElementType> = {
   FileType, Link2, Paperclip, Layers, MessageSquare,
 };
 
-export const ArtifactCardNode = memo(({ data }: NodeProps) => {
+const CARD_BG_COLORS: Record<string, string> = {
+  prompt: 'hsl(263, 70%, 50%)',
+  text: 'hsl(220, 80%, 55%)',
+  image: 'hsl(190, 80%, 40%)',
+  video: 'hsl(0, 75%, 50%)',
+  html: 'hsl(160, 80%, 35%)',
+  pptx: 'hsl(25, 85%, 50%)',
+  pdf: 'hsl(220, 10%, 45%)',
+  link: 'hsl(200, 90%, 40%)',
+  file: 'hsl(220, 15%, 30%)',
+  group: 'hsl(220, 10%, 25%)',
+  comment: 'hsl(38, 85%, 45%)',
+};
+
+export const ArtifactCardNode = memo(({ data, id }: NodeProps) => {
   const card = (data as any).card as Card;
   const config = CARD_TYPE_CONFIG[card.type];
   const Icon = iconMap[config.icon] || FileText;
+  const accentColor = CARD_BG_COLORS[config.colorClass] || 'hsl(220, 15%, 35%)';
+  const store = useWorkspaceStore;
+  const { setNodes } = useReactFlow();
+
+  const onResizeEnd = useCallback((_: any, params: { width: number; height: number }) => {
+    store.getState().updateCard(id, { width: params.width, height: params.height });
+    setNodes((nds) =>
+      nds.map((n) =>
+        n.id === id
+          ? { ...n, style: { ...n.style, width: params.width, height: params.height } }
+          : n
+      )
+    );
+  }, [id, store, setNodes]);
 
   return (
     <div
-      className={`bg-card rounded-lg border-2 card-type-border-${config.colorClass} shadow-lg overflow-hidden h-full flex flex-col group hover:shadow-xl transition-shadow`}
+      className="rounded-lg border-2 shadow-lg overflow-hidden h-full flex flex-col group hover:shadow-xl transition-shadow"
+      style={{
+        borderColor: accentColor,
+        backgroundColor: `color-mix(in srgb, ${accentColor} 8%, hsl(220, 18%, 13%))`,
+      }}
     >
+      <NodeResizer
+        minWidth={140}
+        minHeight={80}
+        lineClassName="!border-primary/40"
+        handleClassName="!w-2.5 !h-2.5 !bg-primary !border-0 !rounded-sm"
+        onResizeEnd={onResizeEnd}
+      />
       <Handle type="target" position={Position.Top} className="!bg-muted-foreground !w-2 !h-2 !border-0 opacity-0 group-hover:opacity-100 transition-opacity" />
       <Handle type="source" position={Position.Bottom} className="!bg-muted-foreground !w-2 !h-2 !border-0 opacity-0 group-hover:opacity-100 transition-opacity" />
       <Handle type="target" position={Position.Left} className="!bg-muted-foreground !w-2 !h-2 !border-0 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -28,7 +68,13 @@ export const ArtifactCardNode = memo(({ data }: NodeProps) => {
 
       {/* Type badge */}
       <div className="px-3 pt-3 pb-1 flex items-center gap-2">
-        <span className={`inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded card-type-bg-${config.colorClass} card-type-text-${config.colorClass}`}>
+        <span
+          className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded"
+          style={{
+            backgroundColor: `color-mix(in srgb, ${accentColor} 20%, transparent)`,
+            color: accentColor,
+          }}
+        >
           <Icon className="w-3 h-3" />
           {config.label}
         </span>
@@ -50,7 +96,6 @@ export const ArtifactCardNode = memo(({ data }: NodeProps) => {
           </p>
         )}
 
-        {/* Type-specific preview */}
         {card.type === 'prompt' && card.content?.body && (
           <div className="mt-2 p-2 rounded bg-secondary/50 text-[10px] font-mono text-muted-foreground line-clamp-4">
             {card.content.body}
