@@ -192,10 +192,15 @@ const BoardCanvas = () => {
             onClose={() => setSelectedCardId(null)}
             onUpdate={(updates) => {
               store.updateCard(selectedCard.id, updates);
+              const updatedCard = { ...selectedCard, ...updates };
               setNodes((nds) =>
                 nds.map((n) =>
                   n.id === selectedCard.id
-                    ? { ...n, data: { card: { ...selectedCard, ...updates } } }
+                    ? {
+                        ...n,
+                        data: { card: updatedCard },
+                        style: { width: updates.width ?? n.style?.width, height: updates.height ?? n.style?.height },
+                      }
                     : n
                 )
               );

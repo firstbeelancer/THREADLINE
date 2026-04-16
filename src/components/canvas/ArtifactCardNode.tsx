@@ -56,6 +56,11 @@ export const ArtifactCardNode = memo(({ data }: NodeProps) => {
             {card.content.body}
           </div>
         )}
+        {card.type === 'image' && card.content?.imageUrl && (
+          <div className="mt-1 flex-1 min-h-0">
+            <img src={card.content.imageUrl} alt={card.title || ''} className="w-full h-full object-cover rounded" />
+          </div>
+        )}
         {card.type === 'link' && card.content?.url && (
           <div className="mt-2 text-[10px] text-primary truncate">
             {card.content.url}
