@@ -186,14 +186,7 @@ export function CardDetailPanel({ card, onClose, onUpdate, onDelete }: CardDetai
 
         {/* Link URL */}
         {card.type === 'link' && (
-          <Field label="URL">
-            <Input
-              value={card.content?.url || ''}
-              onChange={(e) => onUpdate({ content: { ...card.content, url: e.target.value } })}
-              placeholder="https://..."
-              className="bg-[hsl(240,20%,9%)] border-[rgba(255,255,255,0.05)] font-mono text-[10.5px]"
-            />
-          </Field>
+          <LinkEditor card={card} onUpdate={onUpdate} />
         )}
 
         {/* Image upload */}
@@ -517,5 +510,142 @@ function TodoEditor({ card, onUpdate }: { card: Card; onUpdate: (updates: Partia
         </Button>
       </div>
     </Field>
+  );
+}
+
+function LinkEditor({ card, onUpdate }: { card: Card; onUpdate: (updates: Partial<Card>) => void }) {
+  const [url, setUrl] = useState(card.content?.url || '');
+  const [fetching, setFetching] = useState(false);
+
+  useEffect(() => {
+    setUrl(card.content?.url || '');
+  }, [card.id, card.content?.url]);
+
+  const parseUrl = async (rawUrl: string) => {
+    if (!rawUrl.trim()) return;
+    let finalUrl = rawUrl.trim();
+    if (!/^https?:\/\//i.test(finalUrl)) finalUrl = 'https://' + finalUrl;
+    
+    const updates: Record<string, any> = { ...card.content, url: finalUrl };
+    
+    try {
+      const hostname = new URL(finalUrl).hostname;
+      updates.ogTitle = updates.ogTitle || hostname;
+    } catch { /* invalid URL */ }
+
+    // Try fetching OG metadata via a CORS proxy
+    setFetching(true);
+    try {
+      const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(finalUrl)}`;
+      const res = await fetch(proxyUrl, { signal: AbortSignal.timeout(5000) });
+      const html = await res.text();
+      
+      const getMetaContent = (property: string) => {
+        const regex = new RegExp(`<meta[^>]+(?:property|name)=["']${property}["'][^>]+content=["']([^"']+)["']`, 'i');
+        const altRegex = new RegExp(`<meta[^>]+content=["']([^"']+)["'][^>]+(?:property|name)=["']${property}["']`, 'i');
+        return regex.exec(html)?.[1] || altRegex.exec(html)?.[1] || '';
+      };
+
+      const ogTitle = getMetaContent('og:title') || html.match(/<title[^>]*>([^<]+)<\/title>/i)?.[1] || '';
+      const ogDescription = getMetaContent('og:description') || getMetaContent('description');
+      const ogImage = getMetaContent('og:image');
+
+      if (ogTitle) updates.ogTitle = ogTitle;
+      if (ogDescription) updates.ogDescription = ogDescription;
+      if (ogImage) {
+        // Resolve relative URLs
+        if (ogImage.startsWith('/')) {
+          try { updates.ogImage = new URL(ogImage, finalUrl).href; } catch { updates.ogImage = ogImage; }
+        } else {
+          updates.ogImage = ogImage;
+        }
+      }
+    } catch {
+      // Proxy failed — that's okay, we still have favicon + domain
+    }
+    setFetching(false);
+    onUpdate({ content: updates });
+  };
+
+  return (
+    <>
+      <Field label="URL">
+        <div className="flex gap-1">
+          <Input
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && parseUrl(url)}
+            onBlur={() => { if (url !== card.content?.url) parseUrl(url); }}
+            placeholder="https://..."
+            className="bg-[hsl(240,20%,9%)] border-[rgba(255,255,255,0.05)] font-mono text-[10.5px]"
+          />
+        </div>
+        {fetching && (
+          <div className="text-[9px] mt-1 animate-pulse" style={{ color: 'hsl(255,8%,40%)' }}>Загрузка превью...</div>
+        )}
+      </Field>
+
+      {card.content?.url && (
+        <Field label="Превью">
+          <a
+            href={card.content.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block rounded-[7px] overflow-hidden transition-all hover:brightness-110 no-underline"
+            style={{ background: 'hsl(240, 33%, 4%)', border: '1px solid rgba(255,255,255,0.05)' }}
+          >
+            {card.content.ogImage && (
+              <div className="w-full aspect-video overflow-hidden">
+                <img src={card.content.ogImage} alt="" className="w-full h-full object-cover" />
+              </div>
+            )}
+            <div className="p-2.5 flex flex-col gap-1">
+              <div className="flex items-center gap-1.5">
+                <img
+                  src={`https://www.google.com/s2/favicons?domain=${new URL(card.content.url).hostname}&sz=32`}
+                  alt=""
+                  className="w-4 h-4 rounded-[2px] shrink-0"
+                  onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                />
+                <span className="text-[11px] font-medium" style={{ color: 'hsl(260, 20%, 92%)' }}>
+                  {card.content.ogTitle || new URL(card.content.url).hostname}
+                </span>
+              </div>
+              {card.content.ogDescription && (
+                <span className="text-[10px] line-clamp-2" style={{ color: 'hsl(255,8%,62%)' }}>
+                  {card.content.ogDescription}
+                </span>
+              )}
+              <span className="text-[9px] font-mono truncate" style={{ color: '#0EA5E9', opacity: 0.7 }}>
+                {card.content.url}
+              </span>
+            </div>
+          </a>
+        </Field>
+      )}
+
+      {card.content?.url && (
+        <Field label="Мета-данные">
+          <Input
+            value={card.content?.ogTitle || ''}
+            onChange={(e) => onUpdate({ content: { ...card.content, ogTitle: e.target.value } })}
+            placeholder="Заголовок"
+            className="bg-[hsl(240,20%,9%)] border-[rgba(255,255,255,0.05)] text-xs mb-1.5"
+          />
+          <Input
+            value={card.content?.ogDescription || ''}
+            onChange={(e) => onUpdate({ content: { ...card.content, ogDescription: e.target.value } })}
+            placeholder="Описание"
+            className="bg-[hsl(240,20%,9%)] border-[rgba(255,255,255,0.05)] text-xs mb-1.5"
+          />
+          <Input
+            value={card.content?.ogImage || ''}
+            onChange={(e) => onUpdate({ content: { ...card.content, ogImage: e.target.value } })}
+            placeholder="URL изображения"
+            className="bg-[hsl(240,20%,9%)] border-[rgba(255,255,255,0.05)] font-mono text-[10.5px]"
+          />
+        </Field>
+      )}
+    </>
   );
 }
