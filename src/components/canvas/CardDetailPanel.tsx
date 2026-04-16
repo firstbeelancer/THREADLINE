@@ -353,6 +353,33 @@ export function CardDetailPanel({ card, onClose, onUpdate, onDelete }: CardDetai
           </Field>
         )}
 
+        {/* Emoji */}
+        <Field label="Эмодзи">
+          <div className="flex gap-[4px] flex-wrap">
+            {card.content?.emoji && (
+              <button
+                className="w-8 h-8 flex items-center justify-center rounded-[5px] text-[10px] cursor-pointer"
+                style={{ background: 'rgba(239,68,68,0.15)', color: '#EF4444', border: '1px solid rgba(239,68,68,0.2)' }}
+                onClick={() => onUpdate({ content: { ...card.content, emoji: undefined } })}
+                title="Убрать"
+              >✕</button>
+            )}
+            {['👍', '❤️', '⭐', '🔥', '✅', '❌', '⚡', '💡', '🎯', '👀', '🏆', '💎', '🤔', '👎', '🚀', '💩'].map((em) => (
+              <button
+                key={em}
+                className="w-8 h-8 flex items-center justify-center rounded-[5px] text-[16px] cursor-pointer transition-all hover:scale-110"
+                style={{
+                  background: card.content?.emoji === em ? 'rgba(255,255,255,0.1)' : 'transparent',
+                  border: card.content?.emoji === em ? '1px solid rgba(255,255,255,0.15)' : '1px solid transparent',
+                }}
+                onClick={() => onUpdate({ content: { ...card.content, emoji: em } })}
+              >
+                {em}
+              </button>
+            ))}
+          </div>
+        </Field>
+
         {/* Tags */}
         <Field label="Теги">
           <div className="flex gap-1 flex-wrap mb-2">

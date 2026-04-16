@@ -1,4 +1,4 @@
-import { memo, useCallback, useMemo } from 'react';
+import { memo, useCallback, useMemo, useState } from 'react';
 import { Handle, Position, NodeResizer, type NodeProps, useReactFlow } from '@xyflow/react';
 import type { Card } from '@/types';
 import { CARD_TYPE_CONFIG } from '@/types';
@@ -6,8 +6,10 @@ import { useWorkspaceStore } from '@/store/useWorkspaceStore';
 import {
   Sparkles, FileText, Image, Play, Code2, Presentation,
   FileType, Link2, Paperclip, Layers, MessageSquare,
-  Copy, Trash2, MoreHorizontal, CheckSquare, Square, CheckSquare2,
+  Copy, Trash2, MoreHorizontal, CheckSquare, Square, CheckSquare2, Smile,
 } from 'lucide-react';
+
+const QUICK_EMOJIS = ['👍', '❤️', '⭐', '🔥', '✅', '❌', '⚡', '💡', '🎯', '👀', '🏆', '💎'];
 
 const iconMap: Record<string, React.ElementType> = {
   Sparkles, FileText, Image, Play, Code2, Presentation,
@@ -141,33 +143,13 @@ export const ArtifactCardNode = memo(({ data, id, selected }: NodeProps) => {
       >
         <Icon className="w-3 h-3" style={{ color: glow.color }} />
         {config.label}
+        {card.content?.emoji && (
+          <span className="ml-auto text-[14px] leading-none not-italic normal-case">{card.content.emoji}</span>
+        )}
       </div>
 
       {/* Hover actions — above card */}
-      <div className="absolute -top-[9px] right-[7px] flex gap-[2px] opacity-0 group-hover:opacity-100 translate-y-[3px] group-hover:translate-y-0 transition-all z-10">
-        <ActionBtn
-          title="Детали"
-          onClick={(e) => { e.stopPropagation(); }}
-          glow={glow}
-        >
-          <MoreHorizontal className="w-[10px] h-[10px]" />
-        </ActionBtn>
-        <ActionBtn
-          title="Дубликат"
-          onClick={(e) => { e.stopPropagation(); store.getState().duplicateCard(id); }}
-          glow={glow}
-        >
-          <Copy className="w-[10px] h-[10px]" />
-        </ActionBtn>
-        <ActionBtn
-          title="Удалить"
-          onClick={(e) => { e.stopPropagation(); store.getState().deleteCard(id); }}
-          glow={glow}
-          danger
-        >
-          <Trash2 className="w-[10px] h-[10px]" />
-        </ActionBtn>
-      </div>
+      <EmojiAndActions id={id} card={card} glow={glow} store={store} />
 
       {/* Content */}
       <div className="flex-1 px-[11px] py-[10px] flex flex-col gap-1 min-h-0">
@@ -304,6 +286,69 @@ export const ArtifactCardNode = memo(({ data, id, selected }: NodeProps) => {
     </div>
   );
 });
+
+function EmojiAndActions({ id, card, glow, store }: { id: string; card: Card; glow: { color: string; soft: string; ring: string }; store: typeof useWorkspaceStore }) {
+  const [showPicker, setShowPicker] = useState(false);
+
+  return (
+    <>
+      <div className="absolute -top-[9px] right-[7px] flex gap-[2px] opacity-0 group-hover:opacity-100 translate-y-[3px] group-hover:translate-y-0 transition-all z-10">
+        <ActionBtn
+          title="Эмодзи"
+          onClick={(e) => { e.stopPropagation(); setShowPicker(!showPicker); }}
+          glow={glow}
+        >
+          <Smile className="w-[10px] h-[10px]" />
+        </ActionBtn>
+        <ActionBtn
+          title="Дубликат"
+          onClick={(e) => { e.stopPropagation(); store.getState().duplicateCard(id); }}
+          glow={glow}
+        >
+          <Copy className="w-[10px] h-[10px]" />
+        </ActionBtn>
+        <ActionBtn
+          title="Удалить"
+          onClick={(e) => { e.stopPropagation(); store.getState().deleteCard(id); }}
+          glow={glow}
+          danger
+        >
+          <Trash2 className="w-[10px] h-[10px]" />
+        </ActionBtn>
+      </div>
+
+      {showPicker && (
+        <>
+          <div className="fixed inset-0 z-20" onClick={(e) => { e.stopPropagation(); setShowPicker(false); }} />
+          <div
+            className="absolute -top-[52px] right-0 z-30 flex gap-[3px] p-[5px] rounded-[8px] animate-fade-in"
+            style={{ background: 'hsl(240, 25%, 6%)', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 8px 24px rgba(0,0,0,0.5)' }}
+            onClick={(e) => e.stopPropagation()}
+            onMouseDown={(e) => e.stopPropagation()}
+          >
+            {card.content?.emoji && (
+              <button
+                className="w-[24px] h-[24px] flex items-center justify-center rounded-[5px] text-[10px] cursor-pointer transition-all"
+                style={{ background: 'rgba(239,68,68,0.15)', color: '#EF4444' }}
+                onClick={() => { store.getState().updateCard(id, { content: { ...card.content, emoji: undefined } }); setShowPicker(false); }}
+                title="Убрать"
+              >✕</button>
+            )}
+            {QUICK_EMOJIS.map((em) => (
+              <button
+                key={em}
+                className="w-[24px] h-[24px] flex items-center justify-center rounded-[5px] text-[14px] cursor-pointer transition-all hover:scale-125 hover:bg-white/10"
+                onClick={() => { store.getState().updateCard(id, { content: { ...card.content, emoji: em } }); setShowPicker(false); }}
+              >
+                {em}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+    </>
+  );
+}
 
 function ActionBtn({ children, title, onClick, glow, danger }: {
   children: React.ReactNode;
