@@ -186,14 +186,7 @@ export function CardDetailPanel({ card, onClose, onUpdate, onDelete }: CardDetai
 
         {/* Link URL */}
         {card.type === 'link' && (
-          <Field label="URL">
-            <Input
-              value={card.content?.url || ''}
-              onChange={(e) => onUpdate({ content: { ...card.content, url: e.target.value } })}
-              placeholder="https://..."
-              className="bg-[hsl(240,20%,9%)] border-[rgba(255,255,255,0.05)] font-mono text-[10.5px]"
-            />
-          </Field>
+          <LinkEditor card={card} onUpdate={onUpdate} />
         )}
 
         {/* Image upload */}

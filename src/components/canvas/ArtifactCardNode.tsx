@@ -213,15 +213,46 @@ export const ArtifactCardNode = memo(({ data, id, selected }: NodeProps) => {
           </div>
         )}
         {card.type === 'link' && card.content?.url && (
-          <div className="mt-1.5 p-[9px] rounded-[7px]" style={{ background: 'hsl(240, 33%, 4%)' }}>
-            <div className="flex items-center gap-1.5 mb-1">
-              <div className="w-[13px] h-[13px] rounded-[3px] flex items-center justify-center shrink-0" style={{ background: glow.soft }}>
-                <Link2 className="w-[7px] h-[7px]" style={{ color: glow.color }} />
+          <a
+            href={card.content.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-1.5 rounded-[7px] block cursor-pointer no-underline transition-all hover:brightness-110"
+            style={{ background: 'hsl(240, 33%, 4%)', border: '1px solid rgba(255,255,255,0.05)' }}
+            onClick={(e) => e.stopPropagation()}
+            onMouseDown={(e) => e.stopPropagation()}
+          >
+            {card.content.ogImage && (
+              <div className="w-full aspect-video rounded-t-[7px] overflow-hidden">
+                <img src={card.content.ogImage} alt="" className="w-full h-full object-cover" />
               </div>
-              <span className="text-[9.5px] font-mono truncate" style={{ color: 'hsl(255,8%,40%)' }}>
+            )}
+            <div className="p-[9px] flex flex-col gap-1">
+              <div className="flex items-center gap-1.5">
+                <img
+                  src={`https://www.google.com/s2/favicons?domain=${new URL(card.content.url).hostname}&sz=32`}
+                  alt=""
+                  className="w-[14px] h-[14px] rounded-[2px] shrink-0"
+                  onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                />
+                <span className="text-[10px] font-medium truncate" style={{ color: 'hsl(255,8%,62%)' }}>
+                  {card.content.ogTitle || new URL(card.content.url).hostname}
+                </span>
+              </div>
+              {card.content.ogDescription && (
+                <span className="text-[9px] line-clamp-2 leading-relaxed" style={{ color: 'hsl(255,8%,40%)' }}>
+                  {card.content.ogDescription}
+                </span>
+              )}
+              <span className="text-[8.5px] font-mono truncate mt-0.5" style={{ color: glow.color, opacity: 0.7 }}>
                 {card.content.url}
               </span>
             </div>
+          </a>
+        )}
+        {card.type === 'link' && !card.content?.url && (
+          <div className="mt-1 h-[85px] rounded-[7px] flex items-center justify-center" style={{ background: `linear-gradient(135deg, ${glow.soft}, hsl(240, 33%, 4%))` }}>
+            <Link2 className="w-[26px] h-[26px] opacity-35 relative z-[1]" style={{ color: glow.color }} />
           </div>
         )}
         {card.type === 'pdf' && (
