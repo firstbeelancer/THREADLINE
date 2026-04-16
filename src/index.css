@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -45,22 +45,27 @@
     --sidebar-border: 220 15% 16%;
     --sidebar-ring: 220 70% 55%;
 
-    /* Card type accent colors */
-    --card-prompt: 263 70% 50%;
-    --card-text: 220 80% 55%;
-    --card-image: 190 80% 40%;
-    --card-video: 0 75% 50%;
-    --card-html: 160 80% 35%;
-    --card-pptx: 25 85% 50%;
-    --card-pdf: 220 10% 45%;
-    --card-link: 200 90% 40%;
-    --card-file: 220 15% 30%;
+    /* Card type accent colors — from TZ prototype glow system */
+    --card-prompt: 271 91% 65%;
+    --card-text: 217 91% 60%;
+    --card-image: 188 94% 43%;
+    --card-video: 0 84% 60%;
+    --card-html: 160 72% 47%;
+    --card-pptx: 25 95% 53%;
+    --card-pdf: 220 9% 63%;
+    --card-link: 199 89% 48%;
+    --card-file: 220 9% 43%;
     --card-group: 220 10% 25%;
-    --card-comment: 38 85% 45%;
+    --card-comment: 45 96% 53%;
 
     /* Canvas */
-    --canvas-bg: 220 20% 7%;
-    --canvas-dot: 220 15% 15%;
+    --canvas-bg: 240 30% 5%;
+    --canvas-dot: 240 10% 12%;
+
+    /* Deep BG */
+    --bg-deep: 240 30% 5%;
+    --bg-surface: 240 18% 10%;
+    --bg-elevated: 240 15% 13%;
   }
 }
 
