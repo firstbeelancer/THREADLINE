@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useState, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
+import { VoiceRecorder } from './VoiceRecorder';
 
 interface CardDetailPanelProps {
   card: Card;
@@ -342,6 +343,11 @@ export function CardDetailPanel({ card, onClose, onUpdate, onDelete }: CardDetai
           <TodoEditor card={card} onUpdate={onUpdate} />
         )}
 
+        {/* Voice recording */}
+        {card.type === 'voice' && (
+          <VoiceRecorder card={card} onUpdate={onUpdate} />
+        )}
+
         {card.type === 'comment' && (
           <Field label="Комментарий">
             <Textarea
@@ -470,6 +476,8 @@ function getCardExportContent(card: Card): string {
       const items = (card.content?.items as Array<{ text: string; done: boolean }>) || [];
       return items.map((it) => `${it.done ? '✅' : '⬜'} ${it.text}`).join('\n');
     }
+    case 'voice':
+      return card.content?.transcript || card.content?.transcriptSummary || card.title || '';
     case 'pptx':
       return (card.content?.slides as string[] || []).join('\n\n---\n\n');
     default:
@@ -501,6 +509,16 @@ function downloadCardContent(card: Card) {
     a.href = card.content.imageUrl;
     a.download = `${name}.png`;
     a.click();
+    return;
+  }
+  if (card.type === 'voice' && card.content?.audioUrl) {
+    const a = document.createElement('a');
+    a.href = card.content.audioUrl;
+    a.download = card.content.audioName || `${name}.webm`;
+    a.click();
+    if (card.content?.transcript) {
+      triggerDownload(card.content.transcript, `${name}_transcript.txt`);
+    }
     return;
   }
 
