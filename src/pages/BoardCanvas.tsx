@@ -100,7 +100,8 @@ const BoardCanvas = () => {
       const posX = 200 + Math.random() * 400;
       const posY = 200 + Math.random() * 400;
       const cardId = store.createCard(boardId, type, posX, posY);
-      const card = store.cards.find((c) => c.id === cardId);
+      const freshCards = useWorkspaceStore.getState().cards;
+      const card = freshCards.find((c) => c.id === cardId);
       if (!card) return;
       setNodes((nds) => [
         ...nds,
