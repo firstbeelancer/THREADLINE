@@ -19,6 +19,7 @@ export function CardDetailPanel({ card, onClose, onUpdate, onDelete }: CardDetai
   const [tagInput, setTagInput] = useState('');
   const config = CARD_TYPE_CONFIG[card.type];
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const slideFileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     setTitle(card.title);
