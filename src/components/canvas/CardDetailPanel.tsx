@@ -525,6 +525,7 @@ function downloadCardContent(card: Card) {
   }
 }
 
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
       <div className="text-[9.5px] font-semibold uppercase tracking-widest mb-1" style={{ color: 'hsl(255,8%,40%)' }}>{label}</div>
