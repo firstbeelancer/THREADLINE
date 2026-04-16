@@ -222,6 +222,20 @@ export function CardDetailPanel({ card, onClose, onUpdate, onDelete }: CardDetai
               className="bg-[hsl(240,20%,9%)] border-[rgba(255,255,255,0.05)] resize-none font-mono text-[10.5px]"
             />
             <UploadButton onClick={() => fileInputRef.current?.click()} label={card.content?.fileName ? `Файл: ${card.content.fileName}` : 'Загрузить HTML-файл'} />
+            {card.content?.body && (
+              <div className="mt-2">
+                <div className="text-[9.5px] font-semibold uppercase tracking-widest mb-1" style={{ color: 'hsl(255,8%,40%)' }}>Превью</div>
+                <div className="rounded-[7px] overflow-hidden" style={{ border: '1px solid rgba(255,255,255,0.05)' }}>
+                  <iframe
+                    srcDoc={card.content.body}
+                    sandbox="allow-scripts"
+                    className="w-full border-0"
+                    style={{ minHeight: 150, background: '#fff' }}
+                    title="HTML Preview"
+                  />
+                </div>
+              </div>
+            )}
           </Field>
         )}
 

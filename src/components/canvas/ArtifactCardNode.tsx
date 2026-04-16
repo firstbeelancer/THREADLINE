@@ -153,9 +153,14 @@ export const ArtifactCardNode = memo(({ data, id, selected }: NodeProps) => {
           </div>
         )}
         {card.type === 'html' && card.content?.body && (
-          <div className="mt-1.5 p-[9px] rounded-[7px] text-[10px] font-mono line-clamp-4 relative" style={{ background: 'hsl(240, 33%, 4%)', color: glow.color }}>
-            {card.content.body}
-            <div className="absolute bottom-0 left-0 right-0 h-[25px]" style={{ background: 'linear-gradient(transparent, hsl(240, 33%, 4%))' }} />
+          <div className="mt-1.5 rounded-[7px] overflow-hidden relative flex-1 min-h-[80px]" style={{ background: 'hsl(240, 33%, 4%)', border: '1px solid rgba(255,255,255,0.05)' }}>
+            <iframe
+              srcDoc={card.content.body}
+              sandbox="allow-scripts"
+              className="w-full h-full border-0 pointer-events-none"
+              style={{ minHeight: 80, background: '#fff' }}
+              title={card.title || 'HTML Preview'}
+            />
           </div>
         )}
         {card.type === 'link' && card.content?.url && (
