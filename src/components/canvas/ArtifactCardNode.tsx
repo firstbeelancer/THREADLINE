@@ -28,6 +28,54 @@ const GLOW: Record<string, { color: string; soft: string; ring: string }> = {
   comment: { color: '#EAB308', soft: 'rgba(234,179,8,0.12)', ring: 'rgba(234,179,8,0.35)' },
 };
 
+/** PPTX slide preview — adapts layout based on card aspect ratio */
+function PptxPreview({ card, glow }: { card: Card; glow: { color: string; soft: string; ring: string } }) {
+  const slides: string[] = card.content?.slides || [];
+  const hasSlides = slides.length > 0;
+
+  if (!hasSlides) {
+    return (
+      <div className="mt-1 h-[85px] rounded-[7px] flex items-center justify-center" style={{ background: `linear-gradient(135deg, ${glow.soft}, hsl(240, 33%, 4%))` }}>
+        <Presentation className="w-[26px] h-[26px] opacity-35 relative z-[1]" style={{ color: glow.color }} />
+      </div>
+    );
+  }
+
+  const isWide = card.width > card.height * 1.2;
+
+  return (
+    <div
+      className={`mt-1.5 flex-1 min-h-0 flex gap-1.5 overflow-auto rounded-[7px] p-1.5 ${isWide ? 'flex-row' : 'flex-col'}`}
+      style={{ background: 'hsl(240, 33%, 4%)', border: '1px solid rgba(255,255,255,0.05)' }}
+    >
+      {slides.map((slideHtml, i) => (
+        <div
+          key={i}
+          className="rounded-[5px] overflow-hidden shrink-0 relative"
+          style={{
+            width: isWide ? 'auto' : '100%',
+            height: isWide ? '100%' : 'auto',
+            aspectRatio: '16/9',
+            flex: '0 0 auto',
+            border: '1px solid rgba(255,255,255,0.05)',
+          }}
+        >
+          <iframe
+            srcDoc={slideHtml}
+            sandbox="allow-scripts"
+            className="w-full h-full border-0 pointer-events-none"
+            style={{ background: '#fff', minWidth: isWide ? 120 : undefined, minHeight: isWide ? undefined : 60 }}
+            title={`Slide ${i + 1}`}
+          />
+          <div className="absolute bottom-1 right-1 text-[8px] font-mono px-1 py-px rounded" style={{ background: 'rgba(0,0,0,0.6)', color: 'rgba(255,255,255,0.5)' }}>
+            {i + 1}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export const ArtifactCardNode = memo(({ data, id, selected }: NodeProps) => {
   const card = (data as any).card as Card;
   const config = CARD_TYPE_CONFIG[card.type];
@@ -239,57 +287,6 @@ function ActionBtn({ children, title, onClick, glow, danger }: {
     >
       {children}
     </button>
-  );
-}
-/** PPTX slide preview — adapts layout based on card aspect ratio */
-function PptxPreview({ card, glow }: { card: Card; glow: { color: string; soft: string; ring: string } }) {
-  const slides: string[] = card.content?.slides || [];
-  const hasSlides = slides.length > 0;
-
-  if (!hasSlides) {
-    return (
-      <div className="mt-1 h-[85px] rounded-[7px] flex items-center justify-center" style={{ background: `linear-gradient(135deg, ${glow.soft}, hsl(240, 33%, 4%))` }}>
-        <Presentation className="w-[26px] h-[26px] opacity-35 relative z-[1]" style={{ color: glow.color }} />
-      </div>
-    );
-  }
-
-  // Determine layout: wide card → horizontal, tall card → vertical
-  const isWide = card.width > card.height * 1.2;
-
-  return (
-    <div
-      className={`mt-1.5 flex-1 min-h-0 flex gap-1.5 overflow-auto rounded-[7px] p-1.5 ${isWide ? 'flex-row' : 'flex-col'}`}
-      style={{ background: 'hsl(240, 33%, 4%)', border: '1px solid rgba(255,255,255,0.05)' }}
-    >
-      {slides.map((slideHtml, i) => (
-        <div
-          key={i}
-          className="rounded-[5px] overflow-hidden shrink-0 relative"
-          style={{
-            width: isWide ? 'auto' : '100%',
-            height: isWide ? '100%' : 'auto',
-            aspectRatio: '16/9',
-            flex: isWide ? '0 0 auto' : '0 0 auto',
-            border: '1px solid rgba(255,255,255,0.05)',
-          }}
-        >
-          <iframe
-            srcDoc={slideHtml}
-            sandbox="allow-scripts"
-            className="w-full h-full border-0 pointer-events-none"
-            style={{ background: '#fff', minWidth: isWide ? 120 : undefined, minHeight: isWide ? undefined : 60 }}
-            title={`Slide ${i + 1}`}
-          />
-          <div
-            className="absolute bottom-1 right-1 text-[8px] font-mono px-1 py-px rounded"
-            style={{ background: 'rgba(0,0,0,0.6)', color: 'rgba(255,255,255,0.5)' }}
-          >
-            {i + 1}
-          </div>
-        </div>
-      ))}
-    </div>
   );
 }
 
