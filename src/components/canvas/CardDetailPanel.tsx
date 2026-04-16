@@ -458,7 +458,73 @@ export function CardDetailPanel({ card, onClose, onUpdate, onDelete }: CardDetai
   );
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function getCardExportContent(card: Card): string {
+  switch (card.type) {
+    case 'prompt': case 'text': case 'comment':
+      return card.content?.body || card.description || card.title || '';
+    case 'html':
+      return card.content?.body || '';
+    case 'link':
+      return card.content?.url || '';
+    case 'todo': {
+      const items = (card.content?.items as Array<{ text: string; done: boolean }>) || [];
+      return items.map((it) => `${it.done ? '✅' : '⬜'} ${it.text}`).join('\n');
+    }
+    case 'pptx':
+      return (card.content?.slides as string[] || []).join('\n\n---\n\n');
+    default:
+      return card.description || card.title || '';
+  }
+}
+
+function downloadCardContent(card: Card) {
+  const triggerDownload = (content: string, filename: string, mime = 'text/plain') => {
+    const blob = new Blob([content], { type: mime });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = filename; a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const name = (card.title || 'card').replace(/[^a-zA-Zа-яА-Я0-9_-]/g, '_');
+
+  // If there's a file URL (image, pdf, video, file), download it
+  if (card.content?.fileUrl) {
+    const a = document.createElement('a');
+    a.href = card.content.fileUrl;
+    a.download = card.content.fileName || `${name}.bin`;
+    a.click();
+    return;
+  }
+  if (card.content?.imageUrl) {
+    const a = document.createElement('a');
+    a.href = card.content.imageUrl;
+    a.download = `${name}.png`;
+    a.click();
+    return;
+  }
+
+  switch (card.type) {
+    case 'html':
+      return triggerDownload(card.content?.body || '', `${name}.html`, 'text/html');
+    case 'prompt': case 'text': case 'comment':
+      return triggerDownload(card.content?.body || card.description || '', `${name}.txt`);
+    case 'link':
+      return triggerDownload(card.content?.url || '', `${name}.url`);
+    case 'todo': {
+      const items = (card.content?.items as Array<{ text: string; done: boolean }>) || [];
+      return triggerDownload(items.map((it) => `${it.done ? '[x]' : '[ ]'} ${it.text}`).join('\n'), `${name}.txt`);
+    }
+    case 'pptx': {
+      const slides = card.content?.slides as string[] || [];
+      const html = slides.map((s, i) => `<!-- Slide ${i+1} -->\n${s}`).join('\n\n');
+      return triggerDownload(html, `${name}_slides.html`, 'text/html');
+    }
+    default:
+      toast.info('Нет контента для скачивания');
+  }
+}
+
   return (
     <div>
       <div className="text-[9.5px] font-semibold uppercase tracking-widest mb-1" style={{ color: 'hsl(255,8%,40%)' }}>{label}</div>
