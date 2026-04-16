@@ -4,13 +4,13 @@ import { useWorkspaceStore } from '@/store/useWorkspaceStore';
 import { CARD_TYPE_CONFIG, type CardType } from '@/types';
 import {
   Sparkles, FileText, Image, Play, Code2, Presentation,
-  FileType, Link2, Paperclip, Layers, MessageSquare,
+  FileType, Link2, Paperclip, Layers, MessageSquare, Mic, CheckSquare,
   Search, Plus, LayoutGrid, Maximize, Undo2, Redo2,
 } from 'lucide-react';
 
 const iconMap: Record<string, React.ElementType> = {
   Sparkles, FileText, Image, Play, Code2, Presentation,
-  FileType, Link2, Paperclip, Layers, MessageSquare,
+  FileType, Link2, Paperclip, Layers, MessageSquare, Mic, CheckSquare,
 };
 
 interface Command {
@@ -41,7 +41,7 @@ export function CommandPalette({ open, onClose, onAddCard, boardId }: CommandPal
 
   // Create card commands
   if (onAddCard) {
-    const cardTypes: CardType[] = ['prompt', 'text', 'image', 'html', 'video', 'link', 'pdf', 'pptx', 'file', 'comment'];
+    const cardTypes: CardType[] = ['prompt', 'text', 'image', 'html', 'video', 'voice', 'link', 'pdf', 'pptx', 'file', 'todo', 'comment'];
     const shortcuts: Record<string, string> = { prompt: 'P', text: 'T', image: 'I', html: 'H' };
     cardTypes.forEach((type) => {
       const config = CARD_TYPE_CONFIG[type];

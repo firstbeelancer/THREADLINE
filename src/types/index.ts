@@ -1,4 +1,4 @@
-export type CardType = 'prompt' | 'text' | 'image' | 'video' | 'html' | 'pptx' | 'pdf' | 'link' | 'file' | 'group' | 'comment' | 'todo';
+export type CardType = 'prompt' | 'text' | 'image' | 'video' | 'html' | 'pptx' | 'pdf' | 'link' | 'file' | 'group' | 'comment' | 'todo' | 'voice';
 
 export type ConnectionType = 'related' | 'source_of' | 'evolved_into' | 'used_in' | 'reference_for' | 'based_on' | 'derived_from' | 'resulted_in' | 'part_of';
 
@@ -62,6 +62,7 @@ export const CARD_TYPE_CONFIG: Record<CardType, { label: string; icon: string; c
   group: { label: 'Group', icon: 'Layers', colorClass: 'group' },
   comment: { label: 'Comment', icon: 'MessageSquare', colorClass: 'comment' },
   todo: { label: 'To-Do', icon: 'CheckSquare', colorClass: 'todo' },
+  voice: { label: 'Voice', icon: 'Mic', colorClass: 'voice' },
 };
 
 export const CONNECTION_TYPE_LABELS: Record<ConnectionType, string> = {
