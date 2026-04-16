@@ -6,7 +6,7 @@ import { useWorkspaceStore } from '@/store/useWorkspaceStore';
 import {
   Sparkles, FileText, Image, Play, Code2, Presentation,
   FileType, Link2, Paperclip, Layers, MessageSquare,
-  MoreHorizontal, Copy, Trash2,
+  Copy, Trash2, MoreHorizontal,
 } from 'lucide-react';
 
 const iconMap: Record<string, React.ElementType> = {
@@ -14,25 +14,25 @@ const iconMap: Record<string, React.ElementType> = {
   FileType, Link2, Paperclip, Layers, MessageSquare,
 };
 
-const GLOW_COLORS: Record<string, { color: string; soft: string; ring: string }> = {
-  prompt:  { color: '#A855F7', soft: 'rgba(168,85,247,0.15)', ring: 'rgba(168,85,247,0.40)' },
-  text:    { color: '#3B82F6', soft: 'rgba(59,130,246,0.15)', ring: 'rgba(59,130,246,0.40)' },
-  image:   { color: '#06B6D4', soft: 'rgba(6,182,212,0.15)', ring: 'rgba(6,182,212,0.40)' },
-  video:   { color: '#EF4444', soft: 'rgba(239,68,68,0.15)', ring: 'rgba(239,68,68,0.40)' },
-  html:    { color: '#10B981', soft: 'rgba(16,185,129,0.15)', ring: 'rgba(16,185,129,0.40)' },
-  pptx:    { color: '#F97316', soft: 'rgba(249,115,22,0.15)', ring: 'rgba(249,115,22,0.40)' },
-  pdf:     { color: '#9CA3AF', soft: 'rgba(156,163,175,0.15)', ring: 'rgba(156,163,175,0.40)' },
-  link:    { color: '#0EA5E9', soft: 'rgba(14,165,233,0.15)', ring: 'rgba(14,165,233,0.40)' },
-  file:    { color: '#6B7280', soft: 'rgba(107,114,128,0.12)', ring: 'rgba(107,114,128,0.30)' },
-  group:   { color: '#4B5563', soft: 'rgba(75,85,99,0.10)', ring: 'rgba(75,85,99,0.25)' },
-  comment: { color: '#EAB308', soft: 'rgba(234,179,8,0.15)', ring: 'rgba(234,179,8,0.40)' },
+const GLOW: Record<string, { color: string; soft: string; ring: string }> = {
+  prompt:  { color: '#A855F7', soft: 'rgba(168,85,247,0.12)', ring: 'rgba(168,85,247,0.35)' },
+  text:    { color: '#3B82F6', soft: 'rgba(59,130,246,0.12)', ring: 'rgba(59,130,246,0.35)' },
+  image:   { color: '#06B6D4', soft: 'rgba(6,182,212,0.12)', ring: 'rgba(6,182,212,0.35)' },
+  video:   { color: '#EF4444', soft: 'rgba(239,68,68,0.12)', ring: 'rgba(239,68,68,0.35)' },
+  html:    { color: '#10B981', soft: 'rgba(16,185,129,0.12)', ring: 'rgba(16,185,129,0.35)' },
+  pptx:    { color: '#F97316', soft: 'rgba(249,115,22,0.12)', ring: 'rgba(249,115,22,0.35)' },
+  pdf:     { color: '#9CA3AF', soft: 'rgba(156,163,175,0.10)', ring: 'rgba(156,163,175,0.30)' },
+  link:    { color: '#0EA5E9', soft: 'rgba(14,165,233,0.12)', ring: 'rgba(14,165,233,0.35)' },
+  file:    { color: '#6B7280', soft: 'rgba(107,114,128,0.10)', ring: 'rgba(107,114,128,0.30)' },
+  group:   { color: '#4B5563', soft: 'rgba(75,85,99,0.08)', ring: 'rgba(75,85,99,0.25)' },
+  comment: { color: '#EAB308', soft: 'rgba(234,179,8,0.12)', ring: 'rgba(234,179,8,0.35)' },
 };
 
 export const ArtifactCardNode = memo(({ data, id, selected }: NodeProps) => {
   const card = (data as any).card as Card;
   const config = CARD_TYPE_CONFIG[card.type];
   const Icon = iconMap[config.icon] || FileText;
-  const glow = GLOW_COLORS[config.colorClass] || GLOW_COLORS.text;
+  const glow = GLOW[config.colorClass] || GLOW.text;
   const store = useWorkspaceStore;
   const { setNodes } = useReactFlow();
 
@@ -47,122 +47,193 @@ export const ArtifactCardNode = memo(({ data, id, selected }: NodeProps) => {
     );
   }, [id, store, setNodes]);
 
+  const getTimeAgo = (date: Date) => {
+    const diff = Date.now() - new Date(date).getTime();
+    const mins = Math.floor(diff / 60000);
+    if (mins < 1) return 'сейчас';
+    if (mins < 60) return `${mins}м`;
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return `${hrs}ч`;
+    return `${Math.floor(hrs / 24)}д`;
+  };
+
   return (
     <div
-      className="rounded-xl overflow-hidden h-full flex flex-col group transition-all duration-200"
+      className="rounded-[11px] overflow-visible h-full flex flex-col group transition-all duration-200"
       style={{
-        border: `1px solid ${selected ? glow.ring : 'rgba(255,255,255,0.06)'}`,
-        backgroundColor: 'hsl(240, 18%, 10%)',
+        background: 'hsl(240, 20%, 9%)',
+        border: `1px solid ${selected ? glow.ring : 'rgba(255,255,255,0.05)'}`,
         boxShadow: selected
-          ? `0 0 0 1px ${glow.ring}, 0 0 20px ${glow.soft}`
-          : `0 2px 8px rgba(0,0,0,0.3)`,
+          ? `0 0 0 1px ${glow.ring}, 0 0 22px ${glow.soft}`
+          : '0 2px 8px rgba(0,0,0,0.3)',
       }}
     >
       <NodeResizer
         minWidth={140}
         minHeight={80}
-        lineClassName="!border-primary/40"
-        handleClassName="!w-2.5 !h-2.5 !bg-primary !border-0 !rounded-sm"
+        lineClassName="!border-transparent"
+        handleClassName="!w-2.5 !h-2.5 !bg-white/20 !border-0 !rounded-sm"
         onResizeEnd={onResizeEnd}
       />
-      <Handle type="target" position={Position.Top} className="!bg-muted-foreground !w-2 !h-2 !border-0 opacity-0 group-hover:opacity-100 transition-opacity" />
-      <Handle type="source" position={Position.Bottom} className="!bg-muted-foreground !w-2 !h-2 !border-0 opacity-0 group-hover:opacity-100 transition-opacity" />
-      <Handle type="target" position={Position.Left} className="!bg-muted-foreground !w-2 !h-2 !border-0 opacity-0 group-hover:opacity-100 transition-opacity" />
-      <Handle type="source" position={Position.Right} className="!bg-muted-foreground !w-2 !h-2 !border-0 opacity-0 group-hover:opacity-100 transition-opacity" />
+
+      <Handle type="target" position={Position.Top} className="!bg-white/20 !w-2 !h-2 !border-0 opacity-0 group-hover:opacity-100 transition-opacity" />
+      <Handle type="source" position={Position.Bottom} className="!bg-white/20 !w-2 !h-2 !border-0 opacity-0 group-hover:opacity-100 transition-opacity" />
+      <Handle type="target" position={Position.Left} className="!bg-white/20 !w-2 !h-2 !border-0 opacity-0 group-hover:opacity-100 transition-opacity" />
+      <Handle type="source" position={Position.Right} className="!bg-white/20 !w-2 !h-2 !border-0 opacity-0 group-hover:opacity-100 transition-opacity" />
 
       {/* Label bar */}
       <div
-        className="flex items-center gap-1.5 px-3 py-1.5 border-b"
+        className="flex items-center gap-[5px] px-[11px] py-1.5 text-[9.5px] font-semibold uppercase tracking-wide"
         style={{
-          backgroundColor: glow.soft,
-          borderColor: 'rgba(255,255,255,0.06)',
+          background: glow.soft,
+          borderBottom: '1px solid rgba(255,255,255,0.05)',
+          color: glow.color,
         }}
       >
-        <Icon className="w-3.5 h-3.5" style={{ color: glow.color }} />
-        <span
-          className="text-[11px] font-semibold uppercase tracking-wide"
-          style={{ color: glow.color }}
-        >
-          {config.label}
-        </span>
-        {card.tags.length > 0 && (
-          <span className="text-[10px] text-muted-foreground ml-auto">
-            {card.tags[0]}
-          </span>
-        )}
+        <Icon className="w-3 h-3" style={{ color: glow.color }} />
+        {config.label}
       </div>
 
-      {/* Hover actions */}
-      <div className="absolute top-1.5 right-1.5 flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity z-10">
-        <button
-          className="w-6 h-6 flex items-center justify-center rounded-md bg-card/90 border border-border/50 text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-          title="Дублировать"
-          onClick={(e) => { e.stopPropagation(); store.getState().duplicateCard(id); }}
+      {/* Hover actions — above card */}
+      <div className="absolute -top-[9px] right-[7px] flex gap-[2px] opacity-0 group-hover:opacity-100 translate-y-[3px] group-hover:translate-y-0 transition-all z-10">
+        <ActionBtn
+          title="Детали"
+          onClick={(e) => { e.stopPropagation(); }}
+          glow={glow}
         >
-          <Copy className="w-3 h-3" />
-        </button>
-        <button
-          className="w-6 h-6 flex items-center justify-center rounded-md bg-card/90 border border-border/50 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+          <MoreHorizontal className="w-[10px] h-[10px]" />
+        </ActionBtn>
+        <ActionBtn
+          title="Дубликат"
+          onClick={(e) => { e.stopPropagation(); store.getState().duplicateCard(id); }}
+          glow={glow}
+        >
+          <Copy className="w-[10px] h-[10px]" />
+        </ActionBtn>
+        <ActionBtn
           title="Удалить"
           onClick={(e) => { e.stopPropagation(); store.getState().deleteCard(id); }}
+          glow={glow}
+          danger
         >
-          <Trash2 className="w-3 h-3" />
-        </button>
+          <Trash2 className="w-[10px] h-[10px]" />
+        </ActionBtn>
       </div>
 
-      {/* Content area */}
-      <div className="flex-1 px-3 py-2 min-h-0">
-        <h4 className="text-xs font-semibold truncate mb-1">
+      {/* Content */}
+      <div className="flex-1 px-[11px] py-[10px] flex flex-col gap-1 min-h-0">
+        <div className="text-[13px] font-semibold leading-tight line-clamp-2" style={{ color: 'hsl(260, 20%, 92%)' }}>
           {card.title || 'Без названия'}
-        </h4>
+        </div>
         {card.description && (
-          <p className="text-[11px] text-muted-foreground line-clamp-3 leading-relaxed">
+          <div className="text-[11px] leading-relaxed line-clamp-3" style={{ color: 'hsl(255,8%,62%)' }}>
             {card.description}
-          </p>
+          </div>
         )}
 
+        {/* Type-specific previews */}
         {card.type === 'prompt' && card.content?.body && (
-          <div className="mt-2 p-2 rounded bg-secondary/50 text-[10px] font-mono text-muted-foreground line-clamp-4">
+          <div className="mt-1.5 p-[9px] rounded-[7px] text-[10px] font-mono line-clamp-4" style={{ background: 'hsl(240, 33%, 4%)', color: 'hsl(255,8%,62%)' }}>
             {card.content.body}
           </div>
         )}
         {card.type === 'image' && card.content?.imageUrl && (
-          <div className="mt-1 flex-1 min-h-0">
-            <img src={card.content.imageUrl} alt={card.title || ''} className="w-full h-full object-cover rounded" />
+          <div className="mt-1 flex-1 min-h-0 rounded-[7px] overflow-hidden" style={{ background: `linear-gradient(135deg, ${glow.soft}, hsl(240, 33%, 4%))` }}>
+            <img src={card.content.imageUrl} alt={card.title || ''} className="w-full h-full object-cover" />
           </div>
         )}
-        {card.type === 'link' && card.content?.url && (
-          <div className="mt-2 text-[10px] truncate" style={{ color: glow.color }}>
-            {card.content.url}
+        {card.type === 'image' && !card.content?.imageUrl && (
+          <div className="mt-1 h-[85px] rounded-[7px] flex items-center justify-center relative overflow-hidden" style={{ background: `linear-gradient(135deg, ${glow.soft}, hsl(240, 33%, 4%))` }}>
+            <Image className="w-[26px] h-[26px] opacity-35 relative z-[1]" style={{ color: glow.color }} />
+          </div>
+        )}
+        {card.type === 'video' && (
+          <div className="mt-1 h-[85px] rounded-[7px] flex items-center justify-center" style={{ background: `linear-gradient(135deg, ${glow.soft}, hsl(240, 33%, 4%))` }}>
+            <Play className="w-[26px] h-[26px] relative z-[1]" style={{ color: glow.color }} />
           </div>
         )}
         {card.type === 'html' && card.content?.body && (
-          <div className="mt-2 p-2 rounded bg-secondary/50 text-[10px] font-mono line-clamp-4" style={{ color: glow.color }}>
+          <div className="mt-1.5 p-[9px] rounded-[7px] text-[10px] font-mono line-clamp-4 relative" style={{ background: 'hsl(240, 33%, 4%)', color: glow.color }}>
             {card.content.body}
+            <div className="absolute bottom-0 left-0 right-0 h-[25px]" style={{ background: 'linear-gradient(transparent, hsl(240, 33%, 4%))' }} />
+          </div>
+        )}
+        {card.type === 'link' && card.content?.url && (
+          <div className="mt-1.5 p-[9px] rounded-[7px]" style={{ background: 'hsl(240, 33%, 4%)' }}>
+            <div className="flex items-center gap-1.5 mb-1">
+              <div className="w-[13px] h-[13px] rounded-[3px] flex items-center justify-center shrink-0" style={{ background: glow.soft }}>
+                <Link2 className="w-[7px] h-[7px]" style={{ color: glow.color }} />
+              </div>
+              <span className="text-[9.5px] font-mono truncate" style={{ color: 'hsl(255,8%,40%)' }}>
+                {card.content.url}
+              </span>
+            </div>
+          </div>
+        )}
+        {card.type === 'pdf' && (
+          <div className="mt-1.5 h-[60px] rounded-[7px] flex items-center gap-[9px] px-3" style={{ background: 'hsl(240, 33%, 4%)' }}>
+            <FileType className="w-[22px] h-[22px] opacity-45 shrink-0" style={{ color: glow.color }} />
+            <div className="flex flex-col gap-px">
+              <span className="text-[10.5px] font-medium" style={{ color: 'hsl(255,8%,62%)' }}>
+                {card.content?.fileName || 'document.pdf'}
+              </span>
+              <span className="text-[9.5px] font-mono" style={{ color: 'hsl(255,8%,40%)' }}>
+                {card.content?.fileSize || '—'}
+              </span>
+            </div>
           </div>
         )}
       </div>
 
       {/* Footer */}
-      <div className="px-3 py-1.5 border-t flex items-center justify-between" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
-        <span className="text-[10px] text-muted-foreground">
-          {new Date(card.createdAt).toLocaleDateString('ru-RU')}
+      <div className="flex items-center gap-1 px-[11px] py-1.5" style={{ borderTop: '1px solid rgba(255,255,255,0.05)', color: 'hsl(255,8%,40%)' }}>
+        {card.tags.slice(0, 3).map((tag) => (
+          <span key={tag} className="text-[9px] px-[5px] py-px rounded-[3px] font-medium" style={{ background: 'hsl(240, 17%, 12%)', border: '1px solid rgba(255,255,255,0.05)', color: 'hsl(255,8%,62%)' }}>
+            {tag}
+          </span>
+        ))}
+        <span className="ml-auto text-[9px] font-mono opacity-60">
+          {getTimeAgo(card.createdAt)}
         </span>
-        {card.tags.length > 1 && (
-          <div className="flex gap-1">
-            {card.tags.slice(1, 3).map((tag) => (
-              <span key={tag} className="text-[9px] px-1.5 py-0.5 rounded bg-accent text-muted-foreground">
-                {tag}
-              </span>
-            ))}
-          </div>
-        )}
-        {card.isLocked && (
-          <span className="text-[10px] text-muted-foreground">🔒</span>
-        )}
       </div>
     </div>
   );
 });
+
+function ActionBtn({ children, title, onClick, glow, danger }: {
+  children: React.ReactNode;
+  title: string;
+  onClick: (e: React.MouseEvent) => void;
+  glow: { color: string; soft: string; ring: string };
+  danger?: boolean;
+}) {
+  return (
+    <button
+      title={title}
+      onClick={onClick}
+      className="w-[22px] h-[22px] flex items-center justify-center rounded-[5px] cursor-pointer transition-all"
+      style={{
+        background: 'hsl(240, 17%, 12%)',
+        border: '1px solid rgba(255,255,255,0.08)',
+        color: 'hsl(255,8%,62%)',
+        boxShadow: '0 2px 6px rgba(0,0,0,0.3)',
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.background = 'hsl(240, 20%, 16%)';
+        e.currentTarget.style.color = danger ? '#EF4444' : 'hsl(260, 20%, 92%)';
+        e.currentTarget.style.borderColor = danger ? 'rgba(239,68,68,0.35)' : glow.ring;
+        e.currentTarget.style.boxShadow = `0 0 8px ${danger ? 'rgba(239,68,68,0.2)' : glow.soft}`;
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.background = 'hsl(240, 17%, 12%)';
+        e.currentTarget.style.color = 'hsl(255,8%,62%)';
+        e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)';
+        e.currentTarget.style.boxShadow = '0 2px 6px rgba(0,0,0,0.3)';
+      }}
+    >
+      {children}
+    </button>
+  );
+}
 
 ArtifactCardNode.displayName = 'ArtifactCardNode';
