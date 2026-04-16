@@ -15,10 +15,18 @@ const iconMap: Record<string, React.ElementType> = {
   FileType, Link2, Paperclip, Layers, MessageSquare,
 };
 
-const GLOW_COLORS: Record<string, string> = {
-  prompt: '#A855F7', text: '#3B82F6', image: '#06B6D4', video: '#EF4444',
-  html: '#10B981', pptx: '#F97316', pdf: '#9CA3AF', link: '#0EA5E9',
-  file: '#6B7280', group: '#4B5563', comment: '#EAB308',
+const GLOW: Record<string, { color: string; soft: string; ring: string }> = {
+  prompt: { color: '#A855F7', soft: 'rgba(168,85,247,0.12)', ring: 'rgba(168,85,247,0.35)' },
+  text:   { color: '#3B82F6', soft: 'rgba(59,130,246,0.12)', ring: 'rgba(59,130,246,0.35)' },
+  image:  { color: '#06B6D4', soft: 'rgba(6,182,212,0.12)', ring: 'rgba(6,182,212,0.35)' },
+  video:  { color: '#EF4444', soft: 'rgba(239,68,68,0.12)', ring: 'rgba(239,68,68,0.35)' },
+  html:   { color: '#10B981', soft: 'rgba(16,185,129,0.12)', ring: 'rgba(16,185,129,0.35)' },
+  pptx:   { color: '#F97316', soft: 'rgba(249,115,22,0.12)', ring: 'rgba(249,115,22,0.35)' },
+  pdf:    { color: '#9CA3AF', soft: 'rgba(156,163,175,0.10)', ring: 'rgba(156,163,175,0.30)' },
+  link:   { color: '#0EA5E9', soft: 'rgba(14,165,233,0.12)', ring: 'rgba(14,165,233,0.35)' },
+  file:   { color: '#6B7280', soft: 'rgba(107,114,128,0.10)', ring: 'rgba(107,114,128,0.30)' },
+  group:  { color: '#4B5563', soft: 'rgba(75,85,99,0.08)', ring: 'rgba(75,85,99,0.25)' },
+  comment:{ color: '#EAB308', soft: 'rgba(234,179,8,0.12)', ring: 'rgba(234,179,8,0.35)' },
 };
 
 const toolbarGroups: CardType[][] = [
@@ -33,38 +41,42 @@ interface CanvasToolbarProps {
 
 export function CanvasToolbar({ onAddCard }: CanvasToolbarProps) {
   return (
-    <div className="bg-card border border-border rounded-xl shadow-2xl px-2 py-1.5 flex items-center gap-0.5">
+    <div className="flex gap-[2px] p-[5px] rounded-[11px]" style={{ background: 'hsl(240, 25%, 6%)', border: '1px solid rgba(255,255,255,0.08)', boxShadow: '0 0 0 1px rgba(255,255,255,0.05), 0 8px 36px rgba(0,0,0,0.5)' }}>
       {toolbarGroups.map((group, gi) => (
-        <div key={gi} className="flex items-center gap-0.5">
-          {gi > 0 && <div className="w-px h-7 bg-border mx-1" />}
+        <div key={gi} className="flex items-center gap-[2px]">
+          {gi > 0 && <div className="w-px h-[22px] mx-[2px]" style={{ background: 'rgba(255,255,255,0.05)' }} />}
           {group.map((type) => {
             const config = CARD_TYPE_CONFIG[type];
             const Icon = iconMap[config.icon] || FileText;
-            const color = GLOW_COLORS[config.colorClass];
+            const glow = GLOW[config.colorClass];
             return (
               <Tooltip key={type}>
                 <TooltipTrigger asChild>
                   <button
                     onClick={() => onAddCard(type)}
-                    className="w-10 h-10 flex items-center justify-center rounded-lg border border-transparent transition-all duration-200 text-muted-foreground hover:text-foreground hover:bg-accent"
+                    className="w-[34px] h-[34px] flex items-center justify-center rounded-[7px] cursor-pointer transition-all"
                     style={{
-                      ['--glow-color' as string]: color,
+                      border: '1px solid transparent',
+                      background: 'transparent',
+                      color: 'hsl(255,8%,62%)',
                     }}
                     onMouseEnter={(e) => {
-                      e.currentTarget.style.borderColor = `${color}60`;
-                      e.currentTarget.style.boxShadow = `0 0 12px ${color}25`;
-                      e.currentTarget.style.color = color;
+                      e.currentTarget.style.background = 'hsl(240, 17%, 12%)';
+                      e.currentTarget.style.color = glow.color;
+                      e.currentTarget.style.borderColor = glow.ring;
+                      e.currentTarget.style.boxShadow = `0 0 12px ${glow.soft}`;
                     }}
                     onMouseLeave={(e) => {
+                      e.currentTarget.style.background = 'transparent';
+                      e.currentTarget.style.color = 'hsl(255,8%,62%)';
                       e.currentTarget.style.borderColor = 'transparent';
                       e.currentTarget.style.boxShadow = 'none';
-                      e.currentTarget.style.color = '';
                     }}
                   >
-                    <Icon className="w-[18px] h-[18px]" />
+                    <Icon className="w-[15px] h-[15px]" />
                   </button>
                 </TooltipTrigger>
-                <TooltipContent side="top" className="text-xs">
+                <TooltipContent side="top" className="text-[9.5px]">
                   {config.label}
                 </TooltipContent>
               </Tooltip>
