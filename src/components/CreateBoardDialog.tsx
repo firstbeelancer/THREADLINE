@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useWorkspaceStore } from '@/store/useWorkspaceStore';
-import { useNavigate } from 'react-router-dom';
 import {
   Dialog,
   DialogContent,
@@ -14,13 +13,13 @@ import { Textarea } from '@/components/ui/textarea';
 interface CreateBoardDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onCreated?: (id: string) => void;
 }
 
-export function CreateBoardDialog({ open, onOpenChange }: CreateBoardDialogProps) {
+export function CreateBoardDialog({ open, onOpenChange, onCreated }: CreateBoardDialogProps) {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const createBoard = useWorkspaceStore((s) => s.createBoard);
-  const navigate = useNavigate();
 
   const handleCreate = () => {
     if (!name.trim()) return;
@@ -28,7 +27,7 @@ export function CreateBoardDialog({ open, onOpenChange }: CreateBoardDialogProps
     setName('');
     setDescription('');
     onOpenChange(false);
-    navigate(`/board/${id}`);
+    onCreated?.(id);
   };
 
   return (
