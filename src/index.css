@@ -6,46 +6,105 @@
 
 @layer base {
   :root {
-    --background: 220 20% 10%;
-    --foreground: 220 15% 90%;
+    --bg-deep: 240 33% 4%;
+    --bg-base: 240 25% 6%;
+    --bg-surface: 240 20% 9%;
+    --bg-elevated: 240 17% 12%;
+    --bg-hover: 240 20% 16%;
 
-    --card: 220 18% 13%;
-    --card-foreground: 220 15% 90%;
+    --text-primary: 260 20% 92%;
+    --text-secondary: 255 8% 62%;
+    --text-muted: 255 8% 40%;
 
-    --popover: 220 18% 13%;
-    --popover-foreground: 220 15% 90%;
+    --border-subtle: 0 0% 100% / 0.05;
+    --border-default: 0 0% 100% / 0.08;
+    --border-focus: 0 0% 100% / 0.16;
 
-    --primary: 220 70% 55%;
+    --background: var(--bg-deep);
+    --foreground: var(--text-primary);
+
+    --card: var(--bg-surface);
+    --card-foreground: var(--text-primary);
+
+    --popover: var(--bg-base);
+    --popover-foreground: var(--text-primary);
+
+    --primary: 271 91% 65%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 220 15% 18%;
-    --secondary-foreground: 220 15% 80%;
+    --secondary: var(--bg-surface);
+    --secondary-foreground: var(--text-secondary);
 
-    --muted: 220 15% 16%;
-    --muted-foreground: 220 10% 55%;
+    --muted: var(--bg-elevated);
+    --muted-foreground: var(--text-muted);
 
-    --accent: 220 15% 20%;
-    --accent-foreground: 220 15% 85%;
+    --accent: var(--bg-elevated);
+    --accent-foreground: var(--text-primary);
 
     --destructive: 0 72% 55%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 15% 20%;
-    --input: 220 15% 18%;
-    --ring: 220 70% 55%;
+    --border: var(--border-default);
+    --input: var(--bg-surface);
+    --ring: 271 91% 65%;
 
     --radius: 0.5rem;
 
-    --sidebar-background: 220 20% 8%;
-    --sidebar-foreground: 220 10% 70%;
-    --sidebar-primary: 220 70% 55%;
+    --sidebar-background: var(--bg-base);
+    --sidebar-foreground: var(--text-secondary);
+    --sidebar-primary: 271 91% 65%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 15% 14%;
-    --sidebar-accent-foreground: 220 15% 85%;
-    --sidebar-border: 220 15% 16%;
-    --sidebar-ring: 220 70% 55%;
+    --sidebar-accent: var(--bg-elevated);
+    --sidebar-accent-foreground: var(--text-primary);
+    --sidebar-border: var(--border-subtle);
+    --sidebar-ring: 271 91% 65%;
 
-    /* Card type accent colors — from TZ prototype glow system */
+    /* Card type glow colors */
+    --glow-prompt: #A855F7;
+    --glow-prompt-soft: rgba(168,85,247,0.12);
+    --glow-prompt-ring: rgba(168,85,247,0.35);
+
+    --glow-text: #3B82F6;
+    --glow-text-soft: rgba(59,130,246,0.12);
+    --glow-text-ring: rgba(59,130,246,0.35);
+
+    --glow-image: #06B6D4;
+    --glow-image-soft: rgba(6,182,212,0.12);
+    --glow-image-ring: rgba(6,182,212,0.35);
+
+    --glow-video: #EF4444;
+    --glow-video-soft: rgba(239,68,68,0.12);
+    --glow-video-ring: rgba(239,68,68,0.35);
+
+    --glow-html: #10B981;
+    --glow-html-soft: rgba(16,185,129,0.12);
+    --glow-html-ring: rgba(16,185,129,0.35);
+
+    --glow-pptx: #F97316;
+    --glow-pptx-soft: rgba(249,115,22,0.12);
+    --glow-pptx-ring: rgba(249,115,22,0.35);
+
+    --glow-pdf: #9CA3AF;
+    --glow-pdf-soft: rgba(156,163,175,0.10);
+    --glow-pdf-ring: rgba(156,163,175,0.30);
+
+    --glow-link: #0EA5E9;
+    --glow-link-soft: rgba(14,165,233,0.12);
+    --glow-link-ring: rgba(14,165,233,0.35);
+
+    --glow-file: #6B7280;
+    --glow-file-soft: rgba(107,114,128,0.10);
+    --glow-file-ring: rgba(107,114,128,0.30);
+
+    --glow-group: #4B5563;
+    --glow-group-soft: rgba(75,85,99,0.08);
+    --glow-group-ring: rgba(75,85,99,0.25);
+
+    --glow-comment: #EAB308;
+    --glow-comment-soft: rgba(234,179,8,0.12);
+    --glow-comment-ring: rgba(234,179,8,0.35);
+
+    /* Card type HSL for tailwind */
     --card-prompt: 271 91% 65%;
     --card-text: 217 91% 60%;
     --card-image: 188 94% 43%;
@@ -57,15 +116,6 @@
     --card-file: 220 9% 43%;
     --card-group: 220 10% 25%;
     --card-comment: 45 96% 53%;
-
-    /* Canvas */
-    --canvas-bg: 240 30% 5%;
-    --canvas-dot: 240 10% 12%;
-
-    /* Deep BG */
-    --bg-deep: 240 30% 5%;
-    --bg-surface: 240 18% 10%;
-    --bg-elevated: 240 15% 13%;
   }
 }
 
@@ -73,45 +123,25 @@
   * {
     @apply border-border;
   }
+  html, body, #root {
+    height: 100%;
+    overflow: hidden;
+  }
   body {
     @apply bg-background text-foreground font-sans antialiased;
   }
-}
-
-@layer utilities {
-  .card-type-border-prompt { border-color: hsl(var(--card-prompt)); }
-  .card-type-border-text { border-color: hsl(var(--card-text)); }
-  .card-type-border-image { border-color: hsl(var(--card-image)); }
-  .card-type-border-video { border-color: hsl(var(--card-video)); }
-  .card-type-border-html { border-color: hsl(var(--card-html)); }
-  .card-type-border-pptx { border-color: hsl(var(--card-pptx)); }
-  .card-type-border-pdf { border-color: hsl(var(--card-pdf)); }
-  .card-type-border-link { border-color: hsl(var(--card-link)); }
-  .card-type-border-file { border-color: hsl(var(--card-file)); }
-  .card-type-border-group { border-color: hsl(var(--card-group)); }
-  .card-type-border-comment { border-color: hsl(var(--card-comment)); }
-
-  .card-type-bg-prompt { background-color: hsl(var(--card-prompt) / 0.12); }
-  .card-type-bg-text { background-color: hsl(var(--card-text) / 0.12); }
-  .card-type-bg-image { background-color: hsl(var(--card-image) / 0.12); }
-  .card-type-bg-video { background-color: hsl(var(--card-video) / 0.12); }
-  .card-type-bg-html { background-color: hsl(var(--card-html) / 0.12); }
-  .card-type-bg-pptx { background-color: hsl(var(--card-pptx) / 0.12); }
-  .card-type-bg-pdf { background-color: hsl(var(--card-pdf) / 0.12); }
-  .card-type-bg-link { background-color: hsl(var(--card-link) / 0.12); }
-  .card-type-bg-file { background-color: hsl(var(--card-file) / 0.12); }
-  .card-type-bg-group { background-color: hsl(var(--card-group) / 0.12); }
-  .card-type-bg-comment { background-color: hsl(var(--card-comment) / 0.12); }
-
-  .card-type-text-prompt { color: hsl(var(--card-prompt)); }
-  .card-type-text-text { color: hsl(var(--card-text)); }
-  .card-type-text-image { color: hsl(var(--card-image)); }
-  .card-type-text-video { color: hsl(var(--card-video)); }
-  .card-type-text-html { color: hsl(var(--card-html)); }
-  .card-type-text-pptx { color: hsl(var(--card-pptx)); }
-  .card-type-text-pdf { color: hsl(var(--card-pdf)); }
-  .card-type-text-link { color: hsl(var(--card-link)); }
-  .card-type-text-file { color: hsl(var(--card-file)); }
-  .card-type-text-group { color: hsl(var(--card-group)); }
-  .card-type-text-comment { color: hsl(var(--card-comment)); }
+  ::selection {
+    background: rgba(168, 85, 247, 0.3);
+  }
+  ::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 3px;
+  }
 }
