@@ -238,6 +238,25 @@ export const ArtifactCardNode = memo(({ data, id, selected }: NodeProps) => {
           </div>
         )}
         {card.type === 'pptx' && <PptxPreview card={card} glow={glow} />}
+        {card.type === 'todo' && (
+          <div className="mt-1 flex flex-col gap-[3px]">
+            {((card.content?.items as Array<{ text: string; done: boolean }>) || []).map((item, i) => (
+              <div key={i} className="flex items-center gap-[6px] px-1">
+                {item.done ? (
+                  <CheckSquare2 className="w-[12px] h-[12px] shrink-0" style={{ color: '#22C55E' }} />
+                ) : (
+                  <Square className="w-[12px] h-[12px] shrink-0" style={{ color: 'hsl(255,8%,40%)' }} />
+                )}
+                <span className={`text-[11px] leading-tight ${item.done ? 'line-through' : ''}`} style={{ color: item.done ? 'hsl(255,8%,40%)' : 'hsl(255,8%,62%)' }}>
+                  {item.text}
+                </span>
+              </div>
+            ))}
+            {((card.content?.items as Array<{ text: string; done: boolean }>) || []).length === 0 && (
+              <div className="text-[10px] italic" style={{ color: 'hsl(255,8%,40%)' }}>Нет задач</div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Footer */}
