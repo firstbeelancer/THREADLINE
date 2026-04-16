@@ -1,10 +1,10 @@
 import type { Card } from '@/types';
 import { CARD_TYPE_CONFIG } from '@/types';
-import { X, Trash2, Copy, Tag } from 'lucide-react';
+import { X, Trash2, Tag, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 interface CardDetailPanelProps {
   card: Card;
@@ -18,6 +18,7 @@ export function CardDetailPanel({ card, onClose, onUpdate, onDelete }: CardDetai
   const [description, setDescription] = useState(card.description);
   const [tagInput, setTagInput] = useState('');
   const config = CARD_TYPE_CONFIG[card.type];
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     setTitle(card.title);
@@ -37,6 +38,24 @@ export function CardDetailPanel({ card, onClose, onUpdate, onDelete }: CardDetai
   };
   const handleRemoveTag = (tag: string) => {
     onUpdate({ tags: card.tags.filter((t) => t !== tag) });
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    const img = new window.Image();
+    img.onload = () => {
+      const aspectRatio = img.width / img.height;
+      const newWidth = card.width;
+      const newHeight = Math.round(newWidth / aspectRatio);
+      onUpdate({
+        content: { ...card.content, imageUrl: url, imageWidth: img.width, imageHeight: img.height },
+        width: newWidth,
+        height: newHeight,
+      });
+    };
+    img.src = url;
   };
 
   return (
@@ -114,6 +133,47 @@ export function CardDetailPanel({ card, onClose, onUpdate, onDelete }: CardDetai
               rows={8}
               className="bg-secondary resize-none text-sm"
             />
+          </div>
+        )}
+
+        {/* Image-specific */}
+        {card.type === 'image' && (
+          <div>
+            <label className="text-xs text-muted-foreground mb-1 block">Изображение</label>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleImageUpload}
+              className="hidden"
+            />
+            {card.content?.imageUrl ? (
+              <div className="space-y-2">
+                <img
+                  src={card.content.imageUrl}
+                  alt={card.title || 'Изображение'}
+                  className="w-full rounded border border-border object-contain"
+                />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full gap-1"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <Upload className="w-3.5 h-3.5" />
+                  Заменить
+                </Button>
+              </div>
+            ) : (
+              <Button
+                variant="outline"
+                className="w-full h-24 flex flex-col gap-2 border-dashed"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <Upload className="w-5 h-5 text-muted-foreground" />
+                <span className="text-xs text-muted-foreground">Загрузить изображение</span>
+              </Button>
+            )}
           </div>
         )}
 

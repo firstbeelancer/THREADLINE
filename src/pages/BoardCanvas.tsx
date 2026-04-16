@@ -100,7 +100,8 @@ const BoardCanvas = () => {
       const posX = 200 + Math.random() * 400;
       const posY = 200 + Math.random() * 400;
       const cardId = store.createCard(boardId, type, posX, posY);
-      const card = store.cards.find((c) => c.id === cardId);
+      const freshCards = useWorkspaceStore.getState().cards;
+      const card = freshCards.find((c) => c.id === cardId);
       if (!card) return;
       setNodes((nds) => [
         ...nds,
@@ -191,10 +192,15 @@ const BoardCanvas = () => {
             onClose={() => setSelectedCardId(null)}
             onUpdate={(updates) => {
               store.updateCard(selectedCard.id, updates);
+              const updatedCard = { ...selectedCard, ...updates };
               setNodes((nds) =>
                 nds.map((n) =>
                   n.id === selectedCard.id
-                    ? { ...n, data: { card: { ...selectedCard, ...updates } } }
+                    ? {
+                        ...n,
+                        data: { card: updatedCard },
+                        style: { width: updates.width ?? n.style?.width, height: updates.height ?? n.style?.height },
+                      }
                     : n
                 )
               );
