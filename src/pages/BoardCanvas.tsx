@@ -15,6 +15,8 @@ import {
   BackgroundVariant,
   Panel,
   useReactFlow,
+  getNodesBounds,
+  getViewportForBounds,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { useWorkspaceStore } from '@/store/useWorkspaceStore';
@@ -23,9 +25,12 @@ import { CanvasToolbar } from '@/components/canvas/CanvasToolbar';
 import { CardDetailPanel } from '@/components/canvas/CardDetailPanel';
 import { CommandPalette } from '@/components/canvas/CommandPalette';
 import { CanvasContextMenu } from '@/components/canvas/CanvasContextMenu';
-import { ArrowLeft, Maximize, Undo2, Redo2, Plus } from 'lucide-react';
+import { ArrowLeft, Maximize, Undo2, Redo2, Plus, ImageDown, FileDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { CardType } from '@/types';
+import { toPng } from 'html-to-image';
+import { jsPDF } from 'jspdf';
+import { toast } from 'sonner';
 
 const nodeTypes: NodeTypes = {
   artifactCard: ArtifactCardNode,
