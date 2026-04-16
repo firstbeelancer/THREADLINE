@@ -1,6 +1,6 @@
 import type { Card } from '@/types';
 import { CARD_TYPE_CONFIG } from '@/types';
-import { X, Trash2, Tag, Upload } from 'lucide-react';
+import { X, Trash2, Tag, Upload, FileUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -58,133 +58,215 @@ export function CardDetailPanel({ card, onClose, onUpdate, onDelete }: CardDetai
     img.src = url;
   };
 
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    onUpdate({
+      content: {
+        ...card.content,
+        fileUrl: url,
+        fileName: file.name,
+        fileSize: formatFileSize(file.size),
+        fileMime: file.type,
+      },
+    });
+  };
+
+  const handleHtmlFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const text = ev.target?.result as string;
+      onUpdate({ content: { ...card.content, body: text, fileName: file.name } });
+    };
+    reader.readAsText(file);
+  };
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1048576) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / 1048576).toFixed(1)} MB`;
+  };
+
+  // Determine file accept type based on card type
+  const getFileAccept = () => {
+    switch (card.type) {
+      case 'pdf': return '.pdf';
+      case 'pptx': return '.pptx,.ppt';
+      case 'video': return 'video/*';
+      case 'file': return '*';
+      default: return '*';
+    }
+  };
+
+  // Types that support file upload
+  const hasFileUpload = ['pdf', 'pptx', 'video', 'file'].includes(card.type);
+  const hasHtmlUpload = card.type === 'html';
+
   return (
-    <div className="w-80 border-l border-border bg-card h-full overflow-y-auto animate-fade-in">
+    <div className="w-80 h-full overflow-y-auto animate-fade-in flex flex-col" style={{ background: 'hsl(240, 25%, 6%)', borderLeft: '1px solid rgba(255,255,255,0.05)' }}>
       {/* Header */}
-      <div className="p-4 border-b border-border flex items-center justify-between">
-        <span className={`inline-flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded card-type-bg-${config.colorClass} card-type-text-${config.colorClass}`}>
+      <div className="p-4 flex items-center gap-2" style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+        <span
+          className="inline-flex items-center gap-1 text-[9.5px] font-semibold uppercase tracking-wide px-2 py-1 rounded-[5px]"
+          style={{
+            background: `var(--glow-${config.colorClass}-soft, rgba(255,255,255,0.05))`,
+            color: `var(--glow-${config.colorClass}, hsl(255,8%,62%))`,
+          }}
+        >
           {config.label}
         </span>
-        <Button variant="ghost" size="icon" onClick={onClose} className="h-7 w-7">
-          <X className="w-4 h-4" />
-        </Button>
+        <span className="font-display text-sm font-bold flex-1 truncate" style={{ color: 'hsl(260, 20%, 92%)' }}>
+          {card.title || 'Без названия'}
+        </span>
+        <button
+          onClick={onClose}
+          className="w-[26px] h-[26px] flex items-center justify-center rounded-[5px] transition-all"
+          style={{ color: 'hsl(255,8%,62%)' }}
+          onMouseEnter={(e) => { e.currentTarget.style.background = 'hsl(240, 20%, 16%)'; e.currentTarget.style.color = 'hsl(260, 20%, 92%)'; }}
+          onMouseLeave={(e) => { e.currentTarget.style.background = ''; e.currentTarget.style.color = 'hsl(255,8%,62%)'; }}
+        >
+          <X className="w-[13px] h-[13px]" />
+        </button>
       </div>
 
       {/* Content */}
-      <div className="p-4 space-y-4">
-        <div>
-          <label className="text-xs text-muted-foreground mb-1 block">Название</label>
+      <div className="flex-1 overflow-y-auto p-4 space-y-3.5">
+        {/* Title */}
+        <Field label="Название">
           <Input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             onBlur={handleTitleBlur}
             placeholder="Без названия"
-            className="bg-secondary"
+            className="bg-[hsl(240,20%,9%)] border-[rgba(255,255,255,0.05)] text-xs"
           />
-        </div>
+        </Field>
 
-        <div>
-          <label className="text-xs text-muted-foreground mb-1 block">Описание</label>
+        {/* Description */}
+        <Field label="Описание">
           <Textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             onBlur={handleDescBlur}
             placeholder="Добавьте описание..."
             rows={3}
-            className="bg-secondary resize-none"
+            className="bg-[hsl(240,20%,9%)] border-[rgba(255,255,255,0.05)] resize-none text-xs"
           />
-        </div>
+        </Field>
 
-        {/* Prompt-specific content */}
+        {/* Prompt body */}
         {card.type === 'prompt' && (
-          <div>
-            <label className="text-xs text-muted-foreground mb-1 block">Тело промта</label>
+          <Field label="Тело промта">
             <Textarea
               value={card.content?.body || ''}
               onChange={(e) => onUpdate({ content: { ...card.content, body: e.target.value } })}
               placeholder="Введите промт..."
               rows={6}
-              className="bg-secondary resize-none font-mono text-xs"
+              className="bg-[hsl(240,20%,9%)] border-[rgba(255,255,255,0.05)] resize-none font-mono text-[10.5px]"
             />
-          </div>
+          </Field>
         )}
 
-        {/* Link-specific */}
-        {card.type === 'link' && (
-          <div>
-            <label className="text-xs text-muted-foreground mb-1 block">URL</label>
-            <Input
-              value={card.content?.url || ''}
-              onChange={(e) => onUpdate({ content: { ...card.content, url: e.target.value } })}
-              placeholder="https://..."
-              className="bg-secondary font-mono text-xs"
-            />
-          </div>
-        )}
-
-        {/* Text-specific */}
+        {/* Text body */}
         {card.type === 'text' && (
-          <div>
-            <label className="text-xs text-muted-foreground mb-1 block">Текст</label>
+          <Field label="Текст">
             <Textarea
               value={card.content?.body || ''}
               onChange={(e) => onUpdate({ content: { ...card.content, body: e.target.value } })}
               placeholder="Введите текст..."
               rows={8}
-              className="bg-secondary resize-none text-sm"
+              className="bg-[hsl(240,20%,9%)] border-[rgba(255,255,255,0.05)] resize-none text-xs"
             />
-          </div>
+          </Field>
         )}
 
-        {/* Image-specific */}
-        {card.type === 'image' && (
-          <div>
-            <label className="text-xs text-muted-foreground mb-1 block">Изображение</label>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              onChange={handleImageUpload}
-              className="hidden"
+        {/* Link URL */}
+        {card.type === 'link' && (
+          <Field label="URL">
+            <Input
+              value={card.content?.url || ''}
+              onChange={(e) => onUpdate({ content: { ...card.content, url: e.target.value } })}
+              placeholder="https://..."
+              className="bg-[hsl(240,20%,9%)] border-[rgba(255,255,255,0.05)] font-mono text-[10.5px]"
             />
+          </Field>
+        )}
+
+        {/* Image upload */}
+        {card.type === 'image' && (
+          <Field label="Изображение">
+            <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
             {card.content?.imageUrl ? (
               <div className="space-y-2">
-                <img
-                  src={card.content.imageUrl}
-                  alt={card.title || 'Изображение'}
-                  className="w-full rounded border border-border object-contain"
-                />
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="w-full gap-1"
-                  onClick={() => fileInputRef.current?.click()}
-                >
-                  <Upload className="w-3.5 h-3.5" />
-                  Заменить
-                </Button>
+                <img src={card.content.imageUrl} alt={card.title || ''} className="w-full rounded-[7px] object-contain" style={{ border: '1px solid rgba(255,255,255,0.05)' }} />
+                <UploadButton onClick={() => fileInputRef.current?.click()} label="Заменить изображение" />
               </div>
             ) : (
-              <Button
-                variant="outline"
-                className="w-full h-24 flex flex-col gap-2 border-dashed"
-                onClick={() => fileInputRef.current?.click()}
-              >
-                <Upload className="w-5 h-5 text-muted-foreground" />
-                <span className="text-xs text-muted-foreground">Загрузить изображение</span>
-              </Button>
+              <UploadDropzone onClick={() => fileInputRef.current?.click()} label="Загрузить изображение" />
             )}
-          </div>
+          </Field>
+        )}
+
+        {/* HTML file/editor */}
+        {hasHtmlUpload && (
+          <Field label="HTML-код">
+            <input ref={fileInputRef} type="file" accept=".html,.htm,.svg" onChange={handleHtmlFileUpload} className="hidden" />
+            <Textarea
+              value={card.content?.body || ''}
+              onChange={(e) => onUpdate({ content: { ...card.content, body: e.target.value } })}
+              placeholder="<div>Your HTML here</div>"
+              rows={6}
+              className="bg-[hsl(240,20%,9%)] border-[rgba(255,255,255,0.05)] resize-none font-mono text-[10.5px]"
+            />
+            <UploadButton onClick={() => fileInputRef.current?.click()} label={card.content?.fileName ? `Файл: ${card.content.fileName}` : 'Загрузить HTML-файл'} />
+          </Field>
+        )}
+
+        {/* PDF / PPTX / Video / File upload */}
+        {hasFileUpload && (
+          <Field label="Файл">
+            <input ref={fileInputRef} type="file" accept={getFileAccept()} onChange={handleFileUpload} className="hidden" />
+            {card.content?.fileUrl ? (
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 p-3 rounded-[7px]" style={{ background: 'hsl(240, 33%, 4%)', border: '1px solid rgba(255,255,255,0.05)' }}>
+                  <FileUp className="w-5 h-5 shrink-0" style={{ color: 'hsl(255,8%,62%)' }} />
+                  <div className="flex-1 min-w-0">
+                    <div className="text-[10.5px] font-medium truncate" style={{ color: 'hsl(255,8%,62%)' }}>{card.content.fileName}</div>
+                    <div className="text-[9.5px] font-mono" style={{ color: 'hsl(255,8%,40%)' }}>{card.content.fileSize}</div>
+                  </div>
+                </div>
+                <UploadButton onClick={() => fileInputRef.current?.click()} label="Заменить файл" />
+              </div>
+            ) : (
+              <UploadDropzone onClick={() => fileInputRef.current?.click()} label={`Загрузить ${config.label}-файл`} />
+            )}
+          </Field>
+        )}
+
+        {/* Comment body */}
+        {card.type === 'comment' && (
+          <Field label="Комментарий">
+            <Textarea
+              value={card.content?.body || ''}
+              onChange={(e) => onUpdate({ content: { ...card.content, body: e.target.value } })}
+              placeholder="Ваш комментарий..."
+              rows={4}
+              className="bg-[hsl(240,20%,9%)] border-[rgba(255,255,255,0.05)] resize-none text-xs"
+            />
+          </Field>
         )}
 
         {/* Tags */}
-        <div>
-          <label className="text-xs text-muted-foreground mb-1 block">Теги</label>
+        <Field label="Теги">
           <div className="flex gap-1 flex-wrap mb-2">
             {card.tags.map((tag) => (
               <span
                 key={tag}
-                className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded bg-accent text-accent-foreground cursor-pointer hover:bg-destructive/20"
+                className="inline-flex items-center gap-1 text-[9px] px-2 py-0.5 rounded-[4px] cursor-pointer transition-all"
+                style={{ background: 'hsl(240, 20%, 9%)', border: '1px solid rgba(255,255,255,0.05)', color: 'hsl(255,8%,62%)' }}
                 onClick={() => handleRemoveTag(tag)}
               >
                 {tag}
@@ -198,32 +280,69 @@ export function CardDetailPanel({ card, onClose, onUpdate, onDelete }: CardDetai
               onChange={(e) => setTagInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleAddTag()}
               placeholder="Новый тег"
-              className="bg-secondary text-xs h-8"
+              className="bg-[hsl(240,20%,9%)] border-[rgba(255,255,255,0.05)] text-xs h-8"
             />
             <Button variant="outline" size="sm" onClick={handleAddTag} className="h-8 px-2">
               <Tag className="w-3 h-3" />
             </Button>
           </div>
-        </div>
+        </Field>
 
         {/* Meta */}
-        <div className="pt-2 border-t border-border space-y-1">
-          <p className="text-[10px] text-muted-foreground">
+        <div className="pt-2 space-y-1" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+          <p className="text-[9.5px] font-mono" style={{ color: 'hsl(255,8%,40%)' }}>
             Создано: {new Date(card.createdAt).toLocaleString('ru-RU')}
           </p>
-          <p className="text-[10px] text-muted-foreground">
+          <p className="text-[9.5px] font-mono" style={{ color: 'hsl(255,8%,40%)' }}>
             Обновлено: {new Date(card.updatedAt).toLocaleString('ru-RU')}
           </p>
         </div>
 
-        {/* Actions */}
-        <div className="pt-2 flex gap-2">
-          <Button variant="destructive" size="sm" onClick={onDelete} className="gap-1 flex-1">
-            <Trash2 className="w-3.5 h-3.5" />
-            Удалить
-          </Button>
-        </div>
+        {/* Delete */}
+        <Button variant="destructive" size="sm" onClick={onDelete} className="gap-1 w-full">
+          <Trash2 className="w-3.5 h-3.5" />
+          Удалить
+        </Button>
       </div>
     </div>
+  );
+}
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <div className="text-[9.5px] font-semibold uppercase tracking-widest mb-1" style={{ color: 'hsl(255,8%,40%)' }}>{label}</div>
+      {children}
+    </div>
+  );
+}
+
+function UploadButton({ onClick, label }: { onClick: () => void; label: string }) {
+  return (
+    <button
+      onClick={onClick}
+      className="flex items-center gap-1.5 w-full py-[5px] px-[10px] rounded-md text-[10.5px] cursor-pointer transition-all"
+      style={{ background: 'hsl(240, 20%, 9%)', border: '1px solid rgba(255,255,255,0.05)', color: 'hsl(255,8%,62%)' }}
+      onMouseEnter={(e) => { e.currentTarget.style.background = 'hsl(240, 17%, 12%)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; e.currentTarget.style.color = 'hsl(260, 20%, 92%)'; }}
+      onMouseLeave={(e) => { e.currentTarget.style.background = 'hsl(240, 20%, 9%)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = 'hsl(255,8%,62%)'; }}
+    >
+      <Upload className="w-[11px] h-[11px]" />
+      {label}
+    </button>
+  );
+}
+
+function UploadDropzone({ onClick, label }: { onClick: () => void; label: string }) {
+  return (
+    <button
+      onClick={onClick}
+      className="w-full h-20 flex flex-col items-center justify-center gap-2 rounded-[7px] cursor-pointer transition-all"
+      style={{ border: '1px dashed rgba(255,255,255,0.08)', background: 'transparent', color: 'hsl(255,8%,40%)' }}
+      onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.16)'; e.currentTarget.style.background = 'hsl(240, 20%, 9%)'; e.currentTarget.style.color = 'hsl(255,8%,62%)'; }}
+      onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'hsl(255,8%,40%)'; }}
+    >
+      <Upload className="w-5 h-5" />
+      <span className="text-[10.5px]">{label}</span>
+    </button>
   );
 }
