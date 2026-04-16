@@ -6,12 +6,12 @@ import { useWorkspaceStore } from '@/store/useWorkspaceStore';
 import {
   Sparkles, FileText, Image, Play, Code2, Presentation,
   FileType, Link2, Paperclip, Layers, MessageSquare,
-  Copy, Trash2, MoreHorizontal,
+  Copy, Trash2, MoreHorizontal, CheckSquare, Square, CheckSquare2,
 } from 'lucide-react';
 
 const iconMap: Record<string, React.ElementType> = {
   Sparkles, FileText, Image, Play, Code2, Presentation,
-  FileType, Link2, Paperclip, Layers, MessageSquare,
+  FileType, Link2, Paperclip, Layers, MessageSquare, CheckSquare,
 };
 
 const GLOW: Record<string, { color: string; soft: string; ring: string }> = {
@@ -26,6 +26,7 @@ const GLOW: Record<string, { color: string; soft: string; ring: string }> = {
   file:    { color: '#6B7280', soft: 'rgba(107,114,128,0.10)', ring: 'rgba(107,114,128,0.30)' },
   group:   { color: '#4B5563', soft: 'rgba(75,85,99,0.08)', ring: 'rgba(75,85,99,0.25)' },
   comment: { color: '#EAB308', soft: 'rgba(234,179,8,0.12)', ring: 'rgba(234,179,8,0.35)' },
+  todo:    { color: '#22C55E', soft: 'rgba(34,197,94,0.12)', ring: 'rgba(34,197,94,0.35)' },
 };
 
 /** PPTX slide preview — adapts layout based on card aspect ratio */
