@@ -2,7 +2,7 @@ import type { CardType } from '@/types';
 import { CARD_TYPE_CONFIG } from '@/types';
 import {
   Sparkles, FileText, Image, Play, Code2, Presentation,
-  FileType, Link2, Paperclip, Layers, MessageSquare, CheckSquare,
+  FileType, Link2, Paperclip, Layers, MessageSquare, CheckSquare, Mic,
 } from 'lucide-react';
 import {
   Tooltip,
@@ -12,7 +12,7 @@ import {
 
 const iconMap: Record<string, React.ElementType> = {
   Sparkles, FileText, Image, Play, Code2, Presentation,
-  FileType, Link2, Paperclip, Layers, MessageSquare, CheckSquare,
+  FileType, Link2, Paperclip, Layers, MessageSquare, CheckSquare, Mic,
 };
 
 const GLOW: Record<string, { color: string; soft: string; ring: string }> = {
@@ -28,11 +28,12 @@ const GLOW: Record<string, { color: string; soft: string; ring: string }> = {
   group:  { color: '#4B5563', soft: 'rgba(75,85,99,0.08)', ring: 'rgba(75,85,99,0.25)' },
   comment: { color: '#EAB308', soft: 'rgba(234,179,8,0.12)', ring: 'rgba(234,179,8,0.35)' },
   todo:    { color: '#22C55E', soft: 'rgba(34,197,94,0.12)', ring: 'rgba(34,197,94,0.35)' },
+  voice:   { color: '#EC4899', soft: 'rgba(236,72,153,0.12)', ring: 'rgba(236,72,153,0.35)' },
 };
 
 const toolbarGroups: CardType[][] = [
   ['prompt', 'text', 'image', 'html'],
-  ['video', 'link', 'pdf', 'pptx', 'file'],
+  ['video', 'voice', 'link', 'pdf', 'pptx', 'file'],
   ['todo', 'comment'],
 ];
 
