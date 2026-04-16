@@ -170,6 +170,8 @@ const BoardCanvas = () => {
           fitView
           snapToGrid
           snapGrid={[20, 20]}
+          minZoom={0.01}
+          maxZoom={10}
           className="flex-1"
           proOptions={{ hideAttribution: true }}
         >
