@@ -164,9 +164,12 @@ export const ArtifactCardNode = memo(({ data, id, selected }: NodeProps) => {
         )}
 
         {/* Type-specific previews */}
-        {card.type === 'prompt' && card.content?.body && (
-          <div className="mt-1.5 p-[9px] rounded-[7px] text-[10px] font-mono line-clamp-4" style={{ background: 'hsl(240, 33%, 4%)', color: 'hsl(255,8%,62%)' }}>
-            {card.content.body}
+        {card.type === 'prompt' && (
+          <div
+            className="mt-1.5 flex-1 min-h-0 p-[9px] rounded-[7px] text-[10.5px] font-mono overflow-y-auto whitespace-pre-wrap break-words leading-relaxed"
+            style={{ background: 'hsl(240, 33%, 4%)', color: 'hsl(255,8%,70%)' }}
+          >
+            {card.content?.body || <span style={{ color: 'hsl(255,8%,30%)', fontStyle: 'italic' }}>Текст промта...</span>}
           </div>
         )}
         {card.type === 'image' && card.content?.imageUrl && (

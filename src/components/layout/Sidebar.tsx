@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useWorkspaceStore } from '@/store/useWorkspaceStore';
 import { CreateBoardDialog } from '@/components/CreateBoardDialog';
-import { Search, Plus, Activity } from 'lucide-react';
+import { Search, Plus, Activity, Pencil, Check, X } from 'lucide-react';
 
 interface SidebarProps {
   activeBoardId: string | null;
@@ -13,11 +13,32 @@ const BOARD_COLORS = ['#10B981', '#3B82F6', '#A855F7', '#F97316', '#EF4444', '#E
 export function Sidebar({ activeBoardId, onSelectBoard }: SidebarProps) {
   const [search, setSearch] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editValue, setEditValue] = useState('');
+  const editInputRef = useRef<HTMLInputElement>(null);
   const store = useWorkspaceStore();
 
   const filtered = store.boards.filter((b) =>
     b.name.toLowerCase().includes(search.toLowerCase())
   );
+
+  const startEdit = (id: string, name: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setEditingId(id);
+    setEditValue(name);
+    setTimeout(() => editInputRef.current?.focus(), 50);
+  };
+
+  const commitEdit = () => {
+    if (editingId && editValue.trim()) {
+      store.updateBoard(editingId, { name: editValue.trim() });
+    }
+    setEditingId(null);
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+  };
 
   return (
     <div className="w-[252px] flex flex-col shrink-0 z-20 relative" style={{ background: 'hsl(240, 25%, 6%)', borderRight: '1px solid rgba(255,255,255,0.05)' }}>
@@ -63,14 +84,14 @@ export function Sidebar({ activeBoardId, onSelectBoard }: SidebarProps) {
         {filtered.map((board, i) => {
           const color = BOARD_COLORS[i % BOARD_COLORS.length];
           const isActive = board.id === activeBoardId;
+          const isEditing = editingId === board.id;
+
           return (
             <div
               key={board.id}
-              onClick={() => onSelectBoard(board.id)}
-              className="flex items-center gap-[9px] py-[7px] px-[11px] rounded-[7px] cursor-pointer transition-all mb-px relative"
-              style={{
-                background: isActive ? 'hsl(240, 17%, 12%)' : undefined,
-              }}
+              onClick={() => !isEditing && onSelectBoard(board.id)}
+              className="flex items-center gap-[9px] py-[7px] px-[11px] rounded-[7px] cursor-pointer transition-all mb-px relative group/board"
+              style={{ background: isActive ? 'hsl(240, 17%, 12%)' : undefined }}
               onMouseEnter={(e) => { if (!isActive) e.currentTarget.style.background = 'hsl(240, 20%, 16%)'; }}
               onMouseLeave={(e) => { if (!isActive) e.currentTarget.style.background = ''; }}
             >
@@ -80,12 +101,74 @@ export function Sidebar({ activeBoardId, onSelectBoard }: SidebarProps) {
               <div className="w-[7px] h-[7px] rounded-full shrink-0 relative" style={{ background: color }}>
                 <div className="absolute inset-[-2px] rounded-full" style={{ background: color, opacity: 0.3, filter: 'blur(3px)' }} />
               </div>
-              <span className="text-xs font-medium flex-1 truncate" style={{ color: 'hsl(260, 20%, 92%)' }}>
-                {board.name}
-              </span>
-              <span className="text-[9.5px] font-mono shrink-0 px-[5px] py-px rounded-[3px]" style={{ color: 'hsl(255,8%,40%)', background: 'hsl(240, 20%, 9%)' }}>
-                {board.cardCount}
-              </span>
+
+              {isEditing ? (
+                /* ── Inline edit mode ── */
+                <div className="flex items-center gap-1 flex-1 min-w-0" onClick={(e) => e.stopPropagation()}>
+                  <input
+                    ref={editInputRef}
+                    value={editValue}
+                    onChange={(e) => setEditValue(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') commitEdit();
+                      if (e.key === 'Escape') cancelEdit();
+                    }}
+                    onBlur={commitEdit}
+                    className="flex-1 min-w-0 text-xs rounded-[5px] px-[6px] py-[3px] outline-none font-sans"
+                    style={{
+                      background: 'hsl(240, 25%, 15%)',
+                      border: '1px solid rgba(168,85,247,0.4)',
+                      color: 'hsl(260, 20%, 92%)',
+                      boxShadow: '0 0 0 2px rgba(168,85,247,0.15)',
+                    }}
+                  />
+                  <button
+                    onMouseDown={(e) => { e.preventDefault(); commitEdit(); }}
+                    className="w-[18px] h-[18px] flex items-center justify-center rounded-[4px] shrink-0 transition-all"
+                    style={{ background: 'rgba(16,185,129,0.15)', color: '#10B981' }}
+                  >
+                    <Check className="w-[10px] h-[10px]" />
+                  </button>
+                  <button
+                    onMouseDown={(e) => { e.preventDefault(); cancelEdit(); }}
+                    className="w-[18px] h-[18px] flex items-center justify-center rounded-[4px] shrink-0 transition-all"
+                    style={{ background: 'rgba(239,68,68,0.12)', color: '#EF4444' }}
+                  >
+                    <X className="w-[10px] h-[10px]" />
+                  </button>
+                </div>
+              ) : (
+                /* ── Normal mode ── */
+                <>
+                  <span
+                    className="text-xs font-medium flex-1 truncate"
+                    style={{ color: 'hsl(260, 20%, 92%)' }}
+                    onDoubleClick={(e) => startEdit(board.id, board.name, e)}
+                    title="Двойной клик — переименовать"
+                  >
+                    {board.name}
+                  </span>
+
+                  {/* Rename button — visible on hover */}
+                  <button
+                    className="opacity-0 group-hover/board:opacity-100 w-[18px] h-[18px] flex items-center justify-center rounded-[4px] shrink-0 transition-all"
+                    style={{ color: 'hsl(255,8%,40%)' }}
+                    onClick={(e) => startEdit(board.id, board.name, e)}
+                    title="Переименовать"
+                    onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(168,85,247,0.15)'; e.currentTarget.style.color = '#A855F7'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.background = ''; e.currentTarget.style.color = 'hsl(255,8%,40%)'; }}
+                  >
+                    <Pencil className="w-[9px] h-[9px]" />
+                  </button>
+
+                  <span
+                    className="text-[9.5px] font-mono shrink-0 px-[5px] py-px rounded-[3px]"
+                    style={{ color: 'hsl(255,8%,40%)', background: 'hsl(240, 20%, 9%)' }}
+                  >
+                    {board.cardCount}
+                  </span>
+                </>
+              )}
             </div>
           );
         })}
