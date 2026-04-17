@@ -21,6 +21,7 @@ import {
 import '@xyflow/react/dist/style.css';
 import { useWorkspaceStore } from '@/store/useWorkspaceStore';
 import { ArtifactCardNode } from '@/components/canvas/ArtifactCardNode';
+import { ArtifactEdge } from '@/components/canvas/ArtifactEdge';
 import { CanvasToolbar } from '@/components/canvas/CanvasToolbar';
 import { CardDetailPanel } from '@/components/canvas/CardDetailPanel';
 import { CommandPalette } from '@/components/canvas/CommandPalette';
@@ -34,6 +35,10 @@ import { toast } from 'sonner';
 
 const nodeTypes: NodeTypes = {
   artifactCard: ArtifactCardNode,
+};
+
+const edgeTypes = {
+  artifactEdge: ArtifactEdge,
 };
 
 const BoardCanvas = () => {
@@ -61,25 +66,34 @@ const BoardCanvas = () => {
     [boardCards]
   );
 
+  const onEdgeClickCb = useCallback((edgeId: string) => {
+    setSelectedEdgeId(edgeId);
+  }, []);
+
+  const onEdgeCtxCb = useCallback((e: React.MouseEvent, edgeId: string) => {
+    setSelectedEdgeId(edgeId);
+    setEdgeCtxMenu({ x: e.clientX, y: e.clientY, edgeId });
+  }, []);
+
   const initialEdges: Edge[] = useMemo(
     () =>
       boardConnections.map((conn) => ({
         id: conn.id,
         source: conn.sourceId,
         target: conn.targetId,
-        type: 'default',
-        selectable: true,
-        deletable: true,
-        interactionWidth: 20,
+        type: 'artifactEdge',
         style: {
           strokeDasharray: conn.style === 'dashed' ? '8 4' : conn.style === 'dotted' ? '2 2' : undefined,
-          stroke: selectedEdgeId === conn.id ? '#22D3EE' : conn.color || 'hsl(220, 15%, 35%)',
-          strokeWidth: selectedEdgeId === conn.id ? 3 : 1.5,
+          stroke: conn.color || 'hsl(220, 15%, 35%)',
         },
         label: conn.note,
-        animated: selectedEdgeId === conn.id,
+        data: {
+          selectedEdgeId,
+          onEdgeClick: onEdgeClickCb,
+          onEdgeContextMenu: onEdgeCtxCb,
+        },
       })),
-    [boardConnections, selectedEdgeId]
+    [boardConnections, selectedEdgeId, onEdgeClickCb, onEdgeCtxCb]
   );
 
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
@@ -104,17 +118,6 @@ const BoardCanvas = () => {
     },
     [store, setEdges]
   );
-
-  const onEdgeClick = useCallback((_: any, edge: Edge) => {
-    setSelectedEdgeId(edge.id);
-  }, []);
-
-  const onEdgeContextMenu = useCallback((e: React.MouseEvent, edge: Edge) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setSelectedEdgeId(edge.id);
-    setEdgeCtxMenu({ x: e.clientX, y: e.clientY, edgeId: edge.id });
-  }, []);
 
   const onNodeDragStop = useCallback(
     (_: any, node: Node) => {
@@ -320,12 +323,12 @@ const BoardCanvas = () => {
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
-          onEdgeClick={onEdgeClick}
-          onEdgeContextMenu={onEdgeContextMenu}
           onNodeDragStop={onNodeDragStop}
           onNodeClick={onNodeClick}
           onPaneClick={onPaneClick}
+          connectionMode="loose"
           nodeTypes={nodeTypes}
+          edgeTypes={edgeTypes}
           fitView
           snapToGrid
           snapGrid={[20, 20]}
