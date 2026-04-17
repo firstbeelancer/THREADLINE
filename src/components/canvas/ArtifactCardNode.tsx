@@ -7,6 +7,7 @@ import {
   Sparkles, FileText, Image, Play, Code2, Presentation,
   FileType, Link2, Paperclip, Layers, MessageSquare,
   Copy, Trash2, MoreHorizontal, CheckSquare, Square, CheckSquare2, Smile, Mic,
+  Grid3x3, BookOpen, LayoutGrid,
 } from 'lucide-react';
 
 const QUICK_EMOJIS = ['👍', '❤️', '⭐', '🔥', '✅', '❌', '⚡', '💡', '🎯', '👀', '🏆', '💎'];

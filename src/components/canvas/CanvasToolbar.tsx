@@ -3,6 +3,7 @@ import { CARD_TYPE_CONFIG } from '@/types';
 import {
   Sparkles, FileText, Image, Play, Code2, Presentation,
   FileType, Link2, Paperclip, Layers, MessageSquare, CheckSquare, Mic,
+  Grid3x3, BookOpen, LayoutGrid,
 } from 'lucide-react';
 import {
   Tooltip,
