@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 import { v4 as uuid } from 'uuid';
 import type { Board, Card, CardType, Connection, ConnectionType, ConnectionStyle, BoardStatus } from '@/types';
 
@@ -52,144 +53,176 @@ const defaultCardSize: Record<CardType, { width: number; height: number }> = {
   comment: { width: 220, height: 140 },
   todo: { width: 260, height: 220 },
   voice: { width: 280, height: 200 },
+  table: { width: 340, height: 260 },
+  doc: { width: 300, height: 280 },
+  sheet: { width: 360, height: 280 },
 };
 
-export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
-  boards: [],
-  cards: [],
-  connections: [],
-  undoStack: [],
-  redoStack: [],
-
-  createBoard: (name, description = '') => {
-    const id = uuid();
-    const board: Board = {
-      id,
-      name,
-      description,
-      status: 'active',
-      cardCount: 0,
-      cardTypes: [],
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-    set((s) => ({ boards: [...s.boards, board] }));
-    return id;
-  },
-
-  updateBoard: (id, updates) => {
-    set((s) => ({
-      boards: s.boards.map((b) => b.id === id ? { ...b, ...updates, updatedAt: new Date() } : b),
+function rehydrateDates(state: any) {
+  if (state.boards) {
+    state.boards = state.boards.map((b: any) => ({
+      ...b,
+      createdAt: b.createdAt ? new Date(b.createdAt) : new Date(),
+      updatedAt: b.updatedAt ? new Date(b.updatedAt) : new Date(),
     }));
-  },
-
-  deleteBoard: (id) => {
-    set((s) => ({
-      boards: s.boards.filter((b) => b.id !== id),
-      cards: s.cards.filter((c) => c.boardId !== id),
-      connections: s.connections.filter((c) => c.boardId !== id),
+  }
+  if (state.cards) {
+    state.cards = state.cards.map((c: any) => ({
+      ...c,
+      createdAt: c.createdAt ? new Date(c.createdAt) : new Date(),
+      updatedAt: c.updatedAt ? new Date(c.updatedAt) : new Date(),
     }));
-  },
+  }
+  return state;
+}
 
-  duplicateBoard: (id) => {
-    const board = get().boards.find((b) => b.id === id);
-    if (!board) return '';
-    const newId = uuid();
-    set((s) => ({
-      boards: [...s.boards, { ...board, id: newId, name: `${board.name} (копия)`, createdAt: new Date(), updatedAt: new Date() }],
-    }));
-    return newId;
-  },
+export const useWorkspaceStore = create<WorkspaceState>()(
+  persist(
+    (set, get) => ({
+      boards: [],
+      cards: [],
+      connections: [],
+      undoStack: [],
+      redoStack: [],
 
-  createCard: (boardId, type, posX = 100, posY = 100) => {
-    const id = uuid();
-    const size = defaultCardSize[type];
-    const card: Card = {
-      id,
-      boardId,
-      type,
-      title: '',
-      description: '',
-      content: {},
-      tags: [],
-      posX,
-      posY,
-      width: size.width,
-      height: size.height,
-      zIndex: get().cards.filter((c) => c.boardId === boardId).length,
-      isLocked: false,
-      isArchived: false,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-    set((s) => ({
-      cards: [...s.cards, card],
-      boards: s.boards.map((b) =>
-        b.id === boardId
-          ? { ...b, cardCount: b.cardCount + 1, cardTypes: [...new Set([...b.cardTypes, type])], updatedAt: new Date() }
-          : b
-      ),
-    }));
-    return id;
-  },
+      createBoard: (name, description = '') => {
+        const id = uuid();
+        const board: Board = {
+          id,
+          name,
+          description,
+          status: 'active',
+          cardCount: 0,
+          cardTypes: [],
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        };
+        set((s) => ({ boards: [...s.boards, board] }));
+        return id;
+      },
 
-  updateCard: (id, updates) => {
-    set((s) => ({
-      cards: s.cards.map((c) => c.id === id ? { ...c, ...updates, updatedAt: new Date() } : c),
-    }));
-  },
+      updateBoard: (id, updates) => {
+        set((s) => ({
+          boards: s.boards.map((b) => b.id === id ? { ...b, ...updates, updatedAt: new Date() } : b),
+        }));
+      },
 
-  deleteCard: (id) => {
-    const card = get().cards.find((c) => c.id === id);
-    if (!card) return;
-    set((s) => ({
-      cards: s.cards.filter((c) => c.id !== id),
-      connections: s.connections.filter((c) => c.sourceId !== id && c.targetId !== id),
-      boards: s.boards.map((b) =>
-        b.id === card.boardId ? { ...b, cardCount: Math.max(0, b.cardCount - 1), updatedAt: new Date() } : b
-      ),
-    }));
-  },
+      deleteBoard: (id) => {
+        set((s) => ({
+          boards: s.boards.filter((b) => b.id !== id),
+          cards: s.cards.filter((c) => c.boardId !== id),
+          connections: s.connections.filter((c) => c.boardId !== id),
+        }));
+      },
 
-  moveCard: (id, posX, posY) => {
-    set((s) => ({
-      cards: s.cards.map((c) => c.id === id ? { ...c, posX, posY } : c),
-    }));
-  },
+      duplicateBoard: (id) => {
+        const board = get().boards.find((b) => b.id === id);
+        if (!board) return '';
+        const newId = uuid();
+        set((s) => ({
+          boards: [...s.boards, { ...board, id: newId, name: board.name + " (копия)", createdAt: new Date(), updatedAt: new Date() }],
+        }));
+        return newId;
+      },
 
-  resizeCard: (id, width, height) => {
-    set((s) => ({
-      cards: s.cards.map((c) => c.id === id ? { ...c, width, height } : c),
-    }));
-  },
+      createCard: (boardId, type, posX = 100, posY = 100) => {
+        const id = uuid();
+        const size = defaultCardSize[type];
+        const card: Card = {
+          id,
+          boardId,
+          type,
+          title: '',
+          description: '',
+          content: {},
+          tags: [],
+          posX,
+          posY,
+          width: size.width,
+          height: size.height,
+          zIndex: get().cards.filter((c) => c.boardId === boardId).length,
+          isLocked: false,
+          isArchived: false,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        };
+        set((s) => ({
+          cards: [...s.cards, card],
+          boards: s.boards.map((b) =>
+            b.id === boardId
+              ? { ...b, cardCount: b.cardCount + 1, cardTypes: [...new Set([...b.cardTypes, type])], updatedAt: new Date() }
+              : b
+          ),
+        }));
+        return id;
+      },
 
-  duplicateCard: (id) => {
-    const card = get().cards.find((c) => c.id === id);
-    if (!card) return '';
-    const newId = uuid();
-    set((s) => ({
-      cards: [...s.cards, { ...card, id: newId, posX: card.posX + 30, posY: card.posY + 30, createdAt: new Date(), updatedAt: new Date() }],
-    }));
-    return newId;
-  },
+      updateCard: (id, updates) => {
+        set((s) => ({
+          cards: s.cards.map((c) => c.id === id ? { ...c, ...updates, updatedAt: new Date() } : c),
+        }));
+      },
 
-  createConnection: (boardId, sourceId, targetId, type = 'related') => {
-    const id = uuid();
-    const conn: Connection = { id, boardId, sourceId, targetId, type, style: 'solid' };
-    set((s) => ({ connections: [...s.connections, conn] }));
-    return id;
-  },
+      deleteCard: (id) => {
+        const card = get().cards.find((c) => c.id === id);
+        if (!card) return;
+        set((s) => ({
+          cards: s.cards.filter((c) => c.id !== id),
+          connections: s.connections.filter((c) => c.sourceId !== id && c.targetId !== id),
+          boards: s.boards.map((b) =>
+            b.id === card.boardId ? { ...b, cardCount: Math.max(0, b.cardCount - 1), updatedAt: new Date() } : b
+          ),
+        }));
+      },
 
-  updateConnection: (id, updates) => {
-    set((s) => ({
-      connections: s.connections.map((c) => c.id === id ? { ...c, ...updates } : c),
-    }));
-  },
+      moveCard: (id, posX, posY) => {
+        set((s) => ({
+          cards: s.cards.map((c) => c.id === id ? { ...c, posX, posY } : c),
+        }));
+      },
 
-  deleteConnection: (id) => {
-    set((s) => ({ connections: s.connections.filter((c) => c.id !== id) }));
-  },
+      resizeCard: (id, width, height) => {
+        set((s) => ({
+          cards: s.cards.map((c) => c.id === id ? { ...c, width, height } : c),
+        }));
+      },
 
-  getBoardCards: (boardId) => get().cards.filter((c) => c.boardId === boardId && !c.isArchived),
-  getBoardConnections: (boardId) => get().connections.filter((c) => c.boardId === boardId),
-}));
+      duplicateCard: (id) => {
+        const card = get().cards.find((c) => c.id === id);
+        if (!card) return '';
+        const newId = uuid();
+        set((s) => ({
+          cards: [...s.cards, { ...card, id: newId, posX: card.posX + 30, posY: card.posY + 30, createdAt: new Date(), updatedAt: new Date() }],
+        }));
+        return newId;
+      },
+
+      createConnection: (boardId, sourceId, targetId, type = 'related') => {
+        const id = uuid();
+        const conn: Connection = { id, boardId, sourceId, targetId, type, style: 'solid' };
+        set((s) => ({ connections: [...s.connections, conn] }));
+        return id;
+      },
+
+      updateConnection: (id, updates) => {
+        set((s) => ({
+          connections: s.connections.map((c) => c.id === id ? { ...c, ...updates } : c),
+        }));
+      },
+
+      deleteConnection: (id) => {
+        set((s) => ({ connections: s.connections.filter((c) => c.id !== id) }));
+      },
+
+      getBoardCards: (boardId) => get().cards.filter((c) => c.boardId === boardId && !c.isArchived),
+      getBoardConnections: (boardId) => get().connections.filter((c) => c.boardId === boardId),
+    }),
+    {
+      name: 'threadline-workspace',
+      version: 1,
+      onRehydrateStorage: () => (state) => {
+        if (state) rehydrateDates(state);
+      },
+    }
+  )
+);

@@ -14,6 +14,7 @@ const QUICK_EMOJIS = ['👍', '❤️', '⭐', '🔥', '✅', '❌', '⚡', '�
 const iconMap: Record<string, React.ElementType> = {
   Sparkles, FileText, Image, Play, Code2, Presentation,
   FileType, Link2, Paperclip, Layers, MessageSquare, CheckSquare, Mic,
+  Grid3x3, BookOpen, LayoutGrid,
 };
 
 const GLOW: Record<string, { color: string; soft: string; ring: string }> = {
@@ -30,6 +31,9 @@ const GLOW: Record<string, { color: string; soft: string; ring: string }> = {
   comment: { color: '#EAB308', soft: 'rgba(234,179,8,0.12)', ring: 'rgba(234,179,8,0.35)' },
   todo:    { color: '#22C55E', soft: 'rgba(34,197,94,0.12)', ring: 'rgba(34,197,94,0.35)' },
   voice:   { color: '#EC4899', soft: 'rgba(236,72,153,0.12)', ring: 'rgba(236,72,153,0.35)' },
+  table:   { color: '#06B6D4', soft: 'rgba(6,182,212,0.12)', ring: 'rgba(6,182,212,0.35)' },
+  doc:     { color: '#3B82F6', soft: 'rgba(59,130,246,0.12)', ring: 'rgba(59,130,246,0.35)' },
+  sheet:   { color: '#10B981', soft: 'rgba(16,185,129,0.12)', ring: 'rgba(16,185,129,0.35)' },
 };
 
 /** PPTX slide preview — adapts layout based on card aspect ratio */
@@ -303,6 +307,63 @@ export const ArtifactCardNode = memo(({ data, id, selected }: NodeProps) => {
             ))}
             {((card.content?.items as Array<{ text: string; done: boolean }>) || []).length === 0 && (
               <div className="text-[10px] italic" style={{ color: 'hsl(255,8%,40%)' }}>Нет задач</div>
+            )}
+          </div>
+        )}
+        {card.type === 'table' && (
+          <div className="mt-1.5 flex-1 min-h-0 rounded-[7px] overflow-auto" style={{ background: 'hsl(240, 33%, 4%)' }}>
+            {card.content?.rows && card.content.rows.length > 0 ? (
+              <table className="w-full text-[9.5px] border-collapse">
+                {card.content.headers && (
+                  <thead>
+                    <tr>
+                      {(card.content.headers as string[]).map((h: string, i: number) => (
+                        <th key={i} className="px-2 py-1 text-left font-semibold border-b" style={{ borderColor: 'rgba(255,255,255,0.07)', color: 'hsl(255,8%,70%)' }}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                )}
+                <tbody>
+                  {(card.content.rows as string[][]).slice(0, 6).map((row: string[], ri: number) => (
+                    <tr key={ri}>
+                      {row.map((cell: string, ci: number) => (
+                        <td key={ci} className="px-2 py-1 border-b" style={{ borderColor: 'rgba(255,255,255,0.04)', color: 'hsl(255,8%,60%)' }}>{cell}</td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              <div className="h-full flex items-center justify-center">
+                <Grid3x3 className="w-6 h-6 opacity-25" style={{ color: '#06B6D4' }} />
+              </div>
+            )}
+          </div>
+        )}
+        {card.type === 'doc' && (
+          <div className="mt-1.5 flex-1 min-h-0 p-[9px] rounded-[7px] overflow-y-auto text-[10.5px] leading-relaxed whitespace-pre-wrap break-words" style={{ background: 'hsl(240, 33%, 4%)', color: 'hsl(255,8%,70%)' }}>
+            {card.content?.body || <span className="italic" style={{ color: 'hsl(255,8%,30%)' }}>Документ пустой...</span>}
+          </div>
+        )}
+        {card.type === 'sheet' && (
+          <div className="mt-1.5 flex-1 min-h-0 rounded-[7px] overflow-auto" style={{ background: 'hsl(240, 33%, 4%)' }}>
+            {card.content?.rows && card.content.rows.length > 0 ? (
+              <table className="w-full text-[9.5px] border-collapse font-mono">
+                <tbody>
+                  {(card.content.rows as string[][]).slice(0, 8).map((row: string[], ri: number) => (
+                    <tr key={ri}>
+                      <td className="px-1.5 py-0.5 text-[8px] font-bold border-r border-b text-center w-6" style={{ borderColor: 'rgba(255,255,255,0.07)', color: 'hsl(255,8%,35%)', background: 'hsl(240,25%,7%)' }}>{ri + 1}</td>
+                      {row.map((cell: string, ci: number) => (
+                        <td key={ci} className="px-2 py-0.5 border-r border-b" style={{ borderColor: 'rgba(255,255,255,0.05)', color: 'hsl(255,8%,60%)' }}>{cell}</td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              <div className="h-full flex items-center justify-center">
+                <LayoutGrid className="w-6 h-6 opacity-25" style={{ color: '#10B981' }} />
+              </div>
             )}
           </div>
         )}

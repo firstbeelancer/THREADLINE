@@ -348,6 +348,58 @@ export function CardDetailPanel({ card, onClose, onUpdate, onDelete }: CardDetai
           <VoiceRecorder card={card} onUpdate={onUpdate} />
         )}
 
+        {/* Table editor */}
+        {card.type === 'table' && (
+          <div className="flex flex-col gap-2">
+            <label className="text-[10px] uppercase tracking-widest font-semibold" style={{ color: 'hsl(255,8%,40%)' }}>ЗАГОЛОВКИ (через запятую)</label>
+            <input
+              className="w-full rounded-[7px] px-3 py-2 text-xs outline-none font-mono"
+              style={{ background: 'hsl(240, 25%, 8%)', border: '1px solid rgba(255,255,255,0.07)', color: 'hsl(260,20%,90%)' }}
+              value={(card.content?.headers as string[] || []).join(', ')}
+              onChange={(e) => onUpdate({ content: { ...card.content, headers: e.target.value.split(',').map(s => s.trim()) } })}
+              placeholder="Колонка 1, Колонка 2, ..."
+            />
+            <label className="text-[10px] uppercase tracking-widest font-semibold" style={{ color: 'hsl(255,8%,40%)' }}>ДАННЫЕ (CSV, строки через Enter)</label>
+            <textarea
+              className="w-full rounded-[7px] px-3 py-2 text-xs outline-none resize-none font-mono"
+              style={{ background: 'hsl(240, 25%, 8%)', border: '1px solid rgba(255,255,255,0.07)', color: 'hsl(260,20%,90%)', minHeight: 120 }}
+              value={(card.content?.rows as string[][] || []).map((r: string[]) => r.join(', ')).join('
+')}
+              onChange={(e) => onUpdate({ content: { ...card.content, rows: e.target.value.split('
+').filter(l => l.trim()).map(l => l.split(',').map(s => s.trim())) } })}
+              placeholder={'Значение 1, Значение 2
+Строка 2, Значение'}
+            />
+          </div>
+        )}
+        {/* Doc editor */}
+        {card.type === 'doc' && (
+          <textarea
+            className="w-full rounded-[7px] px-3 py-2 text-xs outline-none resize-none"
+            style={{ background: 'hsl(240, 25%, 8%)', border: '1px solid rgba(255,255,255,0.07)', color: 'hsl(260,20%,90%)', minHeight: 200 }}
+            value={card.content?.body || ''}
+            onChange={(e) => onUpdate({ content: { ...card.content, body: e.target.value } })}
+            placeholder="Начните писать документ..."
+          />
+        )}
+        {/* Sheet editor */}
+        {card.type === 'sheet' && (
+          <div className="flex flex-col gap-2">
+            <label className="text-[10px] uppercase tracking-widest font-semibold" style={{ color: 'hsl(255,8%,40%)' }}>ДАННЫЕ ТАБЛИЦЫ (CSV, строки через Enter)</label>
+            <textarea
+              className="w-full rounded-[7px] px-3 py-2 text-xs outline-none resize-none font-mono"
+              style={{ background: 'hsl(240, 25%, 8%)', border: '1px solid rgba(255,255,255,0.07)', color: 'hsl(260,20%,90%)', minHeight: 150 }}
+              value={(card.content?.rows as string[][] || []).map((r: string[]) => r.join('	')).join('
+')}
+              onChange={(e) => onUpdate({ content: { ...card.content, rows: e.target.value.split('
+').filter(l => l.trim()).map(l => l.split(/[,	]/).map(s => s.trim())) } })}
+              placeholder={'10, 20, 30
+40, 50, 60'}
+            />
+            <p className="text-[9.5px]" style={{ color: 'hsl(255,8%,35%)' }}>Разделители: запятая или Tab (можно вставить из Excel)</p>
+          </div>
+        )}
+
         {card.type === 'comment' && (
           <Field label="Комментарий">
             <Textarea

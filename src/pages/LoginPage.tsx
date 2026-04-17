@@ -336,26 +336,11 @@ export default function LoginPage() {
       {/* Logo */}
       <div style={{ position: 'relative', zIndex: 10, marginBottom: 28, textAlign: 'center' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, marginBottom: 8 }}>
-          <div style={{
+          <img src="/icon-192.png" alt="THREADLINE" style={{
             width: 46, height: 46, borderRadius: 14,
-            background: 'linear-gradient(135deg,#10B981 0%,#7C3AED 100%)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            objectFit: 'cover',
             boxShadow: '0 0 28px rgba(16,185,129,0.45), 0 0 60px rgba(124,58,237,0.18)',
-          }}>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <circle cx="5" cy="5" r="1.8" fill="white" opacity="0.95"/>
-              <circle cx="19" cy="5" r="1.8" fill="white" opacity="0.95"/>
-              <circle cx="12" cy="12" r="2.4" fill="white"/>
-              <circle cx="5" cy="19" r="1.8" fill="white" opacity="0.95"/>
-              <circle cx="19" cy="19" r="1.8" fill="white" opacity="0.95"/>
-              <line x1="5" y1="5" x2="12" y2="12" stroke="white" strokeWidth="1.1" opacity="0.55"/>
-              <line x1="19" y1="5" x2="12" y2="12" stroke="white" strokeWidth="1.1" opacity="0.55"/>
-              <line x1="5" y1="19" x2="12" y2="12" stroke="white" strokeWidth="1.1" opacity="0.55"/>
-              <line x1="19" y1="19" x2="12" y2="12" stroke="white" strokeWidth="1.1" opacity="0.55"/>
-              <line x1="5" y1="5" x2="19" y2="5" stroke="white" strokeWidth="0.9" opacity="0.22"/>
-              <line x1="5" y1="19" x2="19" y2="19" stroke="white" strokeWidth="0.9" opacity="0.22"/>
-            </svg>
-          </div>
+          }} />
           <span style={{
             fontSize: 27, fontWeight: 800, letterSpacing: '0.18em',
             background: 'linear-gradient(120deg,#e2e8f0 25%,#10B981 65%,#8B5CF6 100%)',

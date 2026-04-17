@@ -1,4 +1,4 @@
-export type CardType = 'prompt' | 'text' | 'image' | 'video' | 'html' | 'pptx' | 'pdf' | 'link' | 'file' | 'group' | 'comment' | 'todo' | 'voice';
+export type CardType = 'prompt' | 'text' | 'image' | 'video' | 'html' | 'pptx' | 'pdf' | 'link' | 'file' | 'group' | 'comment' | 'todo' | 'voice' | 'table' | 'doc' | 'sheet';
 
 export type ConnectionType = 'related' | 'source_of' | 'evolved_into' | 'used_in' | 'reference_for' | 'based_on' | 'derived_from' | 'resulted_in' | 'part_of';
 
@@ -14,6 +14,7 @@ export interface Board {
   coverUrl?: string;
   cardCount: number;
   cardTypes: CardType[];
+  isPinned?: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -63,6 +64,9 @@ export const CARD_TYPE_CONFIG: Record<CardType, { label: string; icon: string; c
   comment: { label: 'Comment', icon: 'MessageSquare', colorClass: 'comment' },
   todo: { label: 'To-Do', icon: 'CheckSquare', colorClass: 'todo' },
   voice: { label: 'Voice', icon: 'Mic', colorClass: 'voice' },
+  table: { label: 'Table', icon: 'Grid3x3', colorClass: 'table' },
+  doc: { label: 'Doc', icon: 'BookOpen', colorClass: 'doc' },
+  sheet: { label: 'Sheet', icon: 'LayoutGrid', colorClass: 'sheet' },
 };
 
 export const CONNECTION_TYPE_LABELS: Record<ConnectionType, string> = {

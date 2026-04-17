@@ -13,6 +13,7 @@ import {
 const iconMap: Record<string, React.ElementType> = {
   Sparkles, FileText, Image, Play, Code2, Presentation,
   FileType, Link2, Paperclip, Layers, MessageSquare, CheckSquare, Mic,
+  Grid3x3, BookOpen, LayoutGrid,
 };
 
 const GLOW: Record<string, { color: string; soft: string; ring: string }> = {
@@ -29,12 +30,16 @@ const GLOW: Record<string, { color: string; soft: string; ring: string }> = {
   comment: { color: '#EAB308', soft: 'rgba(234,179,8,0.12)', ring: 'rgba(234,179,8,0.35)' },
   todo:    { color: '#22C55E', soft: 'rgba(34,197,94,0.12)', ring: 'rgba(34,197,94,0.35)' },
   voice:   { color: '#EC4899', soft: 'rgba(236,72,153,0.12)', ring: 'rgba(236,72,153,0.35)' },
+  table:   { color: '#06B6D4', soft: 'rgba(6,182,212,0.12)', ring: 'rgba(6,182,212,0.35)' },
+  doc:     { color: '#3B82F6', soft: 'rgba(59,130,246,0.12)', ring: 'rgba(59,130,246,0.35)' },
+  sheet:   { color: '#10B981', soft: 'rgba(16,185,129,0.12)', ring: 'rgba(16,185,129,0.35)' },
 };
 
 const toolbarGroups: CardType[][] = [
   ['prompt', 'text', 'image', 'html'],
   ['video', 'voice', 'link', 'pdf', 'pptx', 'file'],
   ['todo', 'comment'],
+  ['table', 'doc', 'sheet'],
 ];
 
 interface CanvasToolbarProps {
