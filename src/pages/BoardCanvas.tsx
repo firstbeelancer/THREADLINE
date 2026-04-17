@@ -25,7 +25,7 @@ import { CanvasToolbar } from '@/components/canvas/CanvasToolbar';
 import { CardDetailPanel } from '@/components/canvas/CardDetailPanel';
 import { CommandPalette } from '@/components/canvas/CommandPalette';
 import { CanvasContextMenu } from '@/components/canvas/CanvasContextMenu';
-import { ArrowLeft, Maximize, Undo2, Redo2, Plus, ImageDown, FileDown } from 'lucide-react';
+import { ArrowLeft, Maximize, Undo2, Redo2, Plus, ImageDown, FileDown, Trash2, Unlink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { CardType } from '@/types';
 import { toPng } from 'html-to-image';
@@ -47,6 +47,7 @@ const BoardCanvas = () => {
   const [selectedEdgeId, setSelectedEdgeId] = useState<string | null>(null);
   const [cmdOpen, setCmdOpen] = useState(false);
   const [ctxMenu, setCtxMenu] = useState<{ x: number; y: number } | null>(null);
+  const [edgeCtxMenu, setEdgeCtxMenu] = useState<{ x: number; y: number; edgeId: string } | null>(null);
 
   const initialNodes: Node[] = useMemo(
     () =>
@@ -67,9 +68,12 @@ const BoardCanvas = () => {
         source: conn.sourceId,
         target: conn.targetId,
         type: 'default',
+        selectable: true,
+        deletable: true,
+        interactionWidth: 20,
         style: {
           strokeDasharray: conn.style === 'dashed' ? '8 4' : conn.style === 'dotted' ? '2 2' : undefined,
-          stroke: conn.color || 'hsl(220, 15%, 35%)',
+          stroke: selectedEdgeId === conn.id ? '#22D3EE' : conn.color || 'hsl(220, 15%, 35%)',
           strokeWidth: selectedEdgeId === conn.id ? 3 : 1.5,
         },
         label: conn.note,
@@ -105,6 +109,13 @@ const BoardCanvas = () => {
     setSelectedEdgeId(edge.id);
   }, []);
 
+  const onEdgeContextMenu = useCallback((e: React.MouseEvent, edge: Edge) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setSelectedEdgeId(edge.id);
+    setEdgeCtxMenu({ x: e.clientX, y: e.clientY, edgeId: edge.id });
+  }, []);
+
   const onNodeDragStop = useCallback(
     (_: any, node: Node) => {
       store.moveCard(node.id, node.position.x, node.position.y);
@@ -120,6 +131,7 @@ const BoardCanvas = () => {
     setSelectedCardId(null);
     setSelectedEdgeId(null);
     setCtxMenu(null);
+    setEdgeCtxMenu(null);
   }, []);
 
   const handleAddCard = useCallback(
@@ -173,7 +185,9 @@ const BoardCanvas = () => {
       if (e.key === 'Escape') {
         setCmdOpen(false);
         setSelectedCardId(null);
+        setSelectedEdgeId(null);
         setCtxMenu(null);
+        setEdgeCtxMenu(null);
         return;
       }
       if (isInput() || cmdOpen) return;
@@ -307,6 +321,7 @@ const BoardCanvas = () => {
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
           onEdgeClick={onEdgeClick}
+          onEdgeContextMenu={onEdgeContextMenu}
           onNodeDragStop={onNodeDragStop}
           onNodeClick={onNodeClick}
           onPaneClick={onPaneClick}
@@ -379,6 +394,46 @@ const BoardCanvas = () => {
           onAddCard={(type) => handleAddCard(type)}
           onClose={() => setCtxMenu(null)}
         />
+      )}
+
+      {/* Edge context menu */}
+      {edgeCtxMenu && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setEdgeCtxMenu(null)} />
+          <div
+            className="fixed z-50 py-1 rounded-lg shadow-lg border animate-fade-in"
+            style={{
+              left: edgeCtxMenu.x,
+              top: edgeCtxMenu.y,
+              background: 'hsl(240, 25%, 6%)',
+              borderColor: 'rgba(255,255,255,0.1)',
+              minWidth: 160,
+            }}
+          >
+          <button
+            className="w-full px-3 py-2 flex items-center gap-2 text-xs cursor-pointer transition-colors hover:bg-white/5"
+            style={{ color: '#EF4444' }}
+            onClick={() => {
+              handleDeleteEdge(edgeCtxMenu.edgeId);
+              setEdgeCtxMenu(null);
+            }}
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+            Удалить связь
+          </button>
+          <button
+            className="w-full px-3 py-2 flex items-center gap-2 text-xs cursor-pointer transition-colors hover:bg-white/5"
+            style={{ color: 'hsl(255,8%,62%)' }}
+            onClick={() => {
+              setSelectedEdgeId(null);
+              setEdgeCtxMenu(null);
+            }}
+          >
+            <Unlink className="w-3.5 h-3.5" />
+            Отменить выбор
+          </button>
+          </div>
+        </>
       )}
 
       {/* Command palette */}

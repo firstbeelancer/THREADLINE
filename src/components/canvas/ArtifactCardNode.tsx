@@ -133,10 +133,10 @@ export const ArtifactCardNode = memo(({ data, id, selected }: NodeProps) => {
         onResizeEnd={onResizeEnd}
       />
 
-      <Handle id="top" type="target" position={Position.Top} className="!bg-white/30 !w-3 !h-3 !border-0 !rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
-      <Handle id="bottom" type="source" position={Position.Bottom} className="!bg-white/30 !w-3 !h-3 !border-0 !rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
-      <Handle id="left" type="target" position={Position.Left} className="!bg-white/30 !w-3 !h-3 !border-0 !rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
-      <Handle id="right" type="source" position={Position.Right} className="!bg-white/30 !w-3 !h-3 !border-0 !rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
+      <Handle id="top" type="target" position={Position.Top} className="!bg-cyan-400/60 !w-3.5 !h-3.5 !border-2 !border-solid !border-white/30 !rounded-full transition-all hover:!bg-cyan-400 hover:!scale-125 hover:!border-cyan-300" style={{ opacity: 0.7 }} />
+      <Handle id="bottom" type="source" position={Position.Bottom} className="!bg-cyan-400/60 !w-3.5 !h-3.5 !border-2 !border-solid !border-white/30 !rounded-full transition-all hover:!bg-cyan-400 hover:!scale-125 hover:!border-cyan-300" style={{ opacity: 0.7 }} />
+      <Handle id="left" type="target" position={Position.Left} className="!bg-cyan-400/60 !w-3.5 !h-3.5 !border-2 !border-solid !border-white/30 !rounded-full transition-all hover:!bg-cyan-400 hover:!scale-125 hover:!border-cyan-300" style={{ opacity: 0.7 }} />
+      <Handle id="right" type="source" position={Position.Right} className="!bg-cyan-400/60 !w-3.5 !h-3.5 !border-2 !border-solid !border-white/30 !rounded-full transition-all hover:!bg-cyan-400 hover:!scale-125 hover:!border-cyan-300" style={{ opacity: 0.7 }} />
 
       {/* Label bar */}
       <div
