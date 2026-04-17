@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   ReactFlow,
@@ -49,6 +49,8 @@ const BoardCanvas = () => {
   const [cmdOpen, setCmdOpen] = useState(false);
   const [ctxMenu, setCtxMenu] = useState<{ x: number; y: number } | null>(null);
   const [edgeCtxMenu, setEdgeCtxMenu] = useState<{ x: number; y: number; edgeId: string } | null>(null);
+  // Flag to prevent onPaneClick from clearing edge selection immediately after onEdgeClick
+  const edgeJustClicked = useRef(false);
 
   const initialNodes: Node[] = useMemo(
     () =>
@@ -84,49 +86,31 @@ const BoardCanvas = () => {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
 
-  // Sync edges from store (connections) and selection state
-  useEffect(() => {
-    setEdges(
-      boardConnections.map((conn) => ({
-        id: conn.id,
-        source: conn.sourceId,
-        target: conn.targetId,
-        type: 'default',
-        selectable: true,
-        style: {
-          strokeDasharray: conn.style === 'dashed' ? '8 4' : conn.style === 'dotted' ? '2 2' : undefined,
-          stroke: selectedEdgeId === conn.id ? '#22D3EE' : conn.color || 'hsl(220, 15%, 35%)',
-          strokeWidth: selectedEdgeId === conn.id ? 3 : 1.5,
-        },
-        label: conn.note,
-        animated: selectedEdgeId === conn.id,
-      }))
-    );
-  }, [boardConnections, selectedEdgeId, setEdges]);
-
-  // Sync nodes from store (cards)
-  useEffect(() => {
-    setNodes(
-      boardCards.map((card) => ({
-        id: card.id,
-        type: 'artifactCard' as const,
-        position: { x: card.posX, y: card.posY },
-        data: { card },
-        style: { width: card.width, height: card.height },
-      }))
-    );
-  }, [boardCards, setNodes]);
-
   const onConnect = useCallback(
     (params: RFConnection) => {
       if (!boardId || !params.source || !params.target) return;
       const id = store.createConnection(boardId, params.source, params.target);
       setEdges((eds) =>
-        addEdge({ ...params, id, style: { stroke: 'hsl(220, 15%, 35%)', strokeWidth: 1.5 } }, eds)
+        addEdge({ ...params, id, style: { stroke: 'hsl(220, 15%, 35%)', strokeWidth: 1.5 }, selectable: true }, eds)
       );
     },
     [boardId, store, setEdges]
   );
+
+  // Update edge styles when selection changes
+  useEffect(() => {
+    setEdges((eds) =>
+      eds.map((edge) => ({
+        ...edge,
+        style: {
+          ...edge.style,
+          stroke: selectedEdgeId === edge.id ? '#22D3EE' : 'hsl(220, 15%, 35%)',
+          strokeWidth: selectedEdgeId === edge.id ? 3 : 1.5,
+        },
+        animated: selectedEdgeId === edge.id,
+      }))
+    );
+  }, [selectedEdgeId, setEdges]);
 
   const handleDeleteEdge = useCallback(
     (id: string) => {
@@ -138,6 +122,7 @@ const BoardCanvas = () => {
   );
 
   const onEdgeClick = useCallback((_: React.MouseEvent, edge: Edge) => {
+    edgeJustClicked.current = true;
     setSelectedEdgeId(edge.id);
     setSelectedCardId(null);
   }, []);
@@ -167,10 +152,17 @@ const BoardCanvas = () => {
   );
 
   const onNodeClick = useCallback((_: any, node: Node) => {
+    edgeJustClicked.current = true;
     setSelectedCardId(node.id);
+    setSelectedEdgeId(null);
   }, []);
 
   const onPaneClick = useCallback(() => {
+    // If an edge or node was just clicked, don't clear selection
+    if (edgeJustClicked.current) {
+      edgeJustClicked.current = false;
+      return;
+    }
     setSelectedCardId(null);
     setSelectedEdgeId(null);
     setCtxMenu(null);
@@ -258,9 +250,12 @@ const BoardCanvas = () => {
     return () => window.removeEventListener('keydown', handler);
   }, [selectedCardId, selectedEdgeId, cmdOpen, handleAddCard, handleDeleteCard, handleDeleteEdge]);
 
-  // Context menu
+  // Context menu — only on pane (not on edges)
   const handleContextMenu = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
+    // Don't show card creation menu if right-clicking on an edge
+    const target = e.target as HTMLElement;
+    if (target.closest('.react-flow__edge')) return;
     setCtxMenu({ x: e.clientX, y: e.clientY });
   }, []);
 
