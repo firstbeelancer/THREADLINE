@@ -17,6 +17,7 @@ import {
   useReactFlow,
   getNodesBounds,
   getViewportForBounds,
+  ConnectionMode,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { useWorkspaceStore } from '@/store/useWorkspaceStore';
@@ -83,12 +84,45 @@ const BoardCanvas = () => {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
 
+  // Sync edges from store (connections) and selection state
+  useEffect(() => {
+    setEdges(
+      boardConnections.map((conn) => ({
+        id: conn.id,
+        source: conn.sourceId,
+        target: conn.targetId,
+        type: 'default',
+        selectable: true,
+        style: {
+          strokeDasharray: conn.style === 'dashed' ? '8 4' : conn.style === 'dotted' ? '2 2' : undefined,
+          stroke: selectedEdgeId === conn.id ? '#22D3EE' : conn.color || 'hsl(220, 15%, 35%)',
+          strokeWidth: selectedEdgeId === conn.id ? 3 : 1.5,
+        },
+        label: conn.note,
+        animated: selectedEdgeId === conn.id,
+      }))
+    );
+  }, [boardConnections, selectedEdgeId, setEdges]);
+
+  // Sync nodes from store (cards)
+  useEffect(() => {
+    setNodes(
+      boardCards.map((card) => ({
+        id: card.id,
+        type: 'artifactCard' as const,
+        position: { x: card.posX, y: card.posY },
+        data: { card },
+        style: { width: card.width, height: card.height },
+      }))
+    );
+  }, [boardCards, setNodes]);
+
   const onConnect = useCallback(
     (params: RFConnection) => {
       if (!boardId || !params.source || !params.target) return;
       const id = store.createConnection(boardId, params.source, params.target);
       setEdges((eds) =>
-        addEdge({ ...params, id, style: { stroke: 'hsl(220, 15%, 35%)' } }, eds)
+        addEdge({ ...params, id, style: { stroke: 'hsl(220, 15%, 35%)', strokeWidth: 1.5 } }, eds)
       );
     },
     [boardId, store, setEdges]
@@ -103,9 +137,20 @@ const BoardCanvas = () => {
     [store, setEdges]
   );
 
-  const onEdgeClick = useCallback((_: any, edge: Edge) => {
+  const onEdgeClick = useCallback((_: React.MouseEvent, edge: Edge) => {
     setSelectedEdgeId(edge.id);
+    setSelectedCardId(null);
   }, []);
+
+  const onEdgesDelete = useCallback(
+    (deleted: Edge[]) => {
+      for (const edge of deleted) {
+        store.deleteConnection(edge.id);
+      }
+      setSelectedEdgeId(null);
+    },
+    [store]
+  );
 
   const onEdgeContextMenu = useCallback((e: React.MouseEvent, edge: Edge) => {
     e.preventDefault();
@@ -190,15 +235,11 @@ const BoardCanvas = () => {
       }
       if (isInput() || cmdOpen) return;
 
-      // Delete
+      // Delete — only for cards (edges handled by ReactFlow deleteKeyCode + onEdgesDelete)
       if (e.key === 'Delete' || e.key === 'Backspace') {
-        e.preventDefault();
         if (selectedCardId) {
+          e.preventDefault();
           handleDeleteCard(selectedCardId);
-          return;
-        }
-        if (selectedEdgeId) {
-          handleDeleteEdge(selectedEdgeId);
           return;
         }
       }
@@ -319,11 +360,14 @@ const BoardCanvas = () => {
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
           onEdgeClick={onEdgeClick}
+          onEdgesDelete={onEdgesDelete}
           onEdgeContextMenu={onEdgeContextMenu}
           onNodeDragStop={onNodeDragStop}
           onNodeClick={onNodeClick}
           onPaneClick={onPaneClick}
           nodeTypes={nodeTypes}
+          connectionMode={ConnectionMode.Loose}
+          deleteKeyCode={['Delete', 'Backspace']}
           fitView
           snapToGrid
           snapGrid={[20, 20]}
