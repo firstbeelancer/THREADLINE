@@ -310,7 +310,6 @@ const BoardCanvas = () => {
           onNodeDragStop={onNodeDragStop}
           onNodeClick={onNodeClick}
           onPaneClick={onPaneClick}
-          connectionMode="loose"
           nodeTypes={nodeTypes}
           fitView
           snapToGrid
