@@ -221,15 +221,30 @@ export function CardDetailPanel({ card, onClose, onUpdate, onDelete }: CardDetai
             {card.content?.body && (
               <div className="mt-2">
                 <div className="text-[9.5px] font-semibold uppercase tracking-widest mb-1" style={{ color: 'hsl(255,8%,40%)' }}>Превью</div>
-                <div className="rounded-[7px] overflow-hidden" style={{ border: '1px solid rgba(255,255,255,0.05)' }}>
+                <div className="rounded-[7px] overflow-hidden relative" style={{ border: '1px solid rgba(255,255,255,0.05)' }}>
                   <iframe
                     srcDoc={card.content.body}
                     sandbox="allow-scripts"
-                    className="w-full border-0"
+                    className="w-full border-0 pointer-events-none"
                     style={{ minHeight: 150, background: '#fff' }}
                     title="HTML Preview"
+                    scrolling="no"
                   />
                 </div>
+                <button
+                  onClick={() => {
+                    const blob = new Blob([card.content.body], { type: 'text/html' });
+                    const url = URL.createObjectURL(blob);
+                    window.open(url, '_blank');
+                    URL.revokeObjectURL(url);
+                  }}
+                  className="mt-1.5 w-full py-1.5 px-2 rounded-[5px] text-[10px] cursor-pointer transition-all"
+                  style={{ background: 'hsl(240, 20%, 9%)', border: '1px solid rgba(255,255,255,0.05)', color: 'hsl(255,8%,62%)' }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = 'hsl(240, 17%, 12%)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = 'hsl(240, 20%, 9%)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.05)'; }}
+                >
+                  Открыть HTML в новой вкладке
+                </button>
               </div>
             )}
           </Field>
