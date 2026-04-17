@@ -44,6 +44,7 @@ const BoardCanvas = () => {
   const boardCards = store.getBoardCards(boardId || '');
   const boardConnections = store.getBoardConnections(boardId || '');
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
+  const [selectedEdgeId, setSelectedEdgeId] = useState<string | null>(null);
   const [cmdOpen, setCmdOpen] = useState(false);
   const [ctxMenu, setCtxMenu] = useState<{ x: number; y: number } | null>(null);
 
@@ -69,10 +70,12 @@ const BoardCanvas = () => {
         style: {
           strokeDasharray: conn.style === 'dashed' ? '8 4' : conn.style === 'dotted' ? '2 2' : undefined,
           stroke: conn.color || 'hsl(220, 15%, 35%)',
+          strokeWidth: selectedEdgeId === conn.id ? 3 : 1.5,
         },
         label: conn.note,
+        animated: selectedEdgeId === conn.id,
       })),
-    [boardConnections]
+    [boardConnections, selectedEdgeId]
   );
 
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
@@ -89,6 +92,19 @@ const BoardCanvas = () => {
     [boardId, store, setEdges]
   );
 
+  const handleDeleteEdge = useCallback(
+    (id: string) => {
+      store.deleteConnection(id);
+      setEdges((eds) => eds.filter((e) => e.id !== id));
+      setSelectedEdgeId(null);
+    },
+    [store, setEdges]
+  );
+
+  const onEdgeClick = useCallback((_: any, edge: Edge) => {
+    setSelectedEdgeId(edge.id);
+  }, []);
+
   const onNodeDragStop = useCallback(
     (_: any, node: Node) => {
       store.moveCard(node.id, node.position.x, node.position.y);
@@ -102,6 +118,7 @@ const BoardCanvas = () => {
 
   const onPaneClick = useCallback(() => {
     setSelectedCardId(null);
+    setSelectedEdgeId(null);
     setCtxMenu(null);
   }, []);
 
@@ -162,10 +179,20 @@ const BoardCanvas = () => {
       if (isInput() || cmdOpen) return;
 
       // Delete
-      if ((e.key === 'Delete' || e.key === 'Backspace') && selectedCardId) {
+      if (e.key === 'Delete' || e.key === 'Backspace') {
         e.preventDefault();
-        handleDeleteCard(selectedCardId);
-        return;
+        if (selectedCardId) {
+          handleDeleteCard(selectedCardId);
+          return;
+        }
+        if (selectedEdgeId) {
+          handleDeleteEdge(selectedEdgeId);
+          return;
+        }
+      }
+      // Deselect edge
+      if (e.key === 'Escape') {
+        setSelectedEdgeId(null);
       }
       // Quick card creation
       if (e.key === 'p') handleAddCard('prompt');
@@ -176,7 +203,7 @@ const BoardCanvas = () => {
 
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [selectedCardId, cmdOpen, handleAddCard, handleDeleteCard]);
+  }, [selectedCardId, selectedEdgeId, cmdOpen, handleAddCard, handleDeleteCard, handleDeleteEdge]);
 
   // Context menu
   const handleContextMenu = useCallback((e: React.MouseEvent) => {
@@ -279,9 +306,11 @@ const BoardCanvas = () => {
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
+          onEdgeClick={onEdgeClick}
           onNodeDragStop={onNodeDragStop}
           onNodeClick={onNodeClick}
           onPaneClick={onPaneClick}
+          connectionMode="loose"
           nodeTypes={nodeTypes}
           fitView
           snapToGrid

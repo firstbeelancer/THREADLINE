@@ -133,10 +133,10 @@ export const ArtifactCardNode = memo(({ data, id, selected }: NodeProps) => {
         onResizeEnd={onResizeEnd}
       />
 
-      <Handle id="top" type="source" position={Position.Top} isConnectableEnd={true} className="!bg-white/20 !w-2 !h-2 !border-0 opacity-0 group-hover:opacity-100 transition-opacity" />
-      <Handle id="bottom" type="source" position={Position.Bottom} isConnectableEnd={true} className="!bg-white/20 !w-2 !h-2 !border-0 opacity-0 group-hover:opacity-100 transition-opacity" />
-      <Handle id="left" type="source" position={Position.Left} isConnectableEnd={true} className="!bg-white/20 !w-2 !h-2 !border-0 opacity-0 group-hover:opacity-100 transition-opacity" />
-      <Handle id="right" type="source" position={Position.Right} isConnectableEnd={true} className="!bg-white/20 !w-2 !h-2 !border-0 opacity-0 group-hover:opacity-100 transition-opacity" />
+      <Handle id="top" type="source" position={Position.Top} className="!bg-white/20 !w-2 !h-2 !border-0 opacity-0 group-hover:opacity-100 transition-opacity" />
+      <Handle id="bottom" type="source" position={Position.Bottom} className="!bg-white/20 !w-2 !h-2 !border-0 opacity-0 group-hover:opacity-100 transition-opacity" />
+      <Handle id="left" type="source" position={Position.Left} className="!bg-white/20 !w-2 !h-2 !border-0 opacity-0 group-hover:opacity-100 transition-opacity" />
+      <Handle id="right" type="source" position={Position.Right} className="!bg-white/20 !w-2 !h-2 !border-0 opacity-0 group-hover:opacity-100 transition-opacity" />
 
       {/* Label bar */}
       <div
