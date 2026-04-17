@@ -133,10 +133,16 @@ export const ArtifactCardNode = memo(({ data, id, selected }: NodeProps) => {
         onResizeEnd={onResizeEnd}
       />
 
-      <Handle id="top" type="source" position={Position.Top} className="!bg-white/20 !w-2 !h-2 !border-0 opacity-0 group-hover:opacity-100 transition-opacity" />
-      <Handle id="bottom" type="source" position={Position.Bottom} className="!bg-white/20 !w-2 !h-2 !border-0 opacity-0 group-hover:opacity-100 transition-opacity" />
-      <Handle id="left" type="source" position={Position.Left} className="!bg-white/20 !w-2 !h-2 !border-0 opacity-0 group-hover:opacity-100 transition-opacity" />
-      <Handle id="right" type="source" position={Position.Right} className="!bg-white/20 !w-2 !h-2 !border-0 opacity-0 group-hover:opacity-100 transition-opacity" />
+      {/* Source handles — for starting connections */}
+      <Handle id="top" type="source" position={Position.Top} className="!bg-white/30 !w-3 !h-3 !border-0 !rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
+      <Handle id="bottom" type="source" position={Position.Bottom} className="!bg-white/30 !w-3 !h-3 !border-0 !rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
+      <Handle id="left" type="source" position={Position.Left} className="!bg-white/30 !w-3 !h-3 !border-0 !rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
+      <Handle id="right" type="source" position={Position.Right} className="!bg-white/30 !w-3 !h-3 !border-0 !rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
+      {/* Target handles — for receiving connections */}
+      <Handle id="top-t" type="target" position={Position.Top} className="!bg-transparent !w-3 !h-3 !border-0 !rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
+      <Handle id="bottom-t" type="target" position={Position.Bottom} className="!bg-transparent !w-3 !h-3 !border-0 !rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
+      <Handle id="left-t" type="target" position={Position.Left} className="!bg-transparent !w-3 !h-3 !border-0 !rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
+      <Handle id="right-t" type="target" position={Position.Right} className="!bg-transparent !w-3 !h-3 !border-0 !rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
 
       {/* Label bar */}
       <div
