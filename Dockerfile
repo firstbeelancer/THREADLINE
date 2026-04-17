@@ -18,7 +18,9 @@ RUN printf 'server {\n\
   index index.html;\n\
 \n\
   location /api/ {\n\
-    proxy_pass http://threadline-backend:3001/;\n\
+    resolver 127.0.0.11 ipv6=off valid=10s;\n\
+    set $backend "threadline-backend";\n\
+    proxy_pass http://$backend:3001/;\n\
     proxy_http_version 1.1;\n\
     proxy_set_header Host $http_host;\n\
     proxy_set_header X-Real-IP $remote_addr;\n\
@@ -30,6 +32,7 @@ RUN printf 'server {\n\
   location / {\n\
     try_files $uri $uri/ /index.html;\n\
   }\n\
-}\n' > /etc/nginx/conf.d/default.conf
+}\n\
+' > /etc/nginx/conf.d/default.conf
 
 EXPOSE 80
