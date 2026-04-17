@@ -83,15 +83,11 @@ const BoardCanvas = () => {
 
   const onConnect = useCallback(
     (params: RFConnection) => {
-      console.log('[DEBUG] onConnect called', params);
       if (!boardId || !params.source || !params.target) return;
       const id = store.createConnection(boardId, params.source, params.target);
-      console.log('[DEBUG] created connection id', id);
-      setEdges((eds) => {
-        const newEdges = addEdge({ ...params, id, style: { stroke: 'hsl(220, 15%, 35%)' } }, eds);
-        console.log('[DEBUG] new edges count', newEdges.length);
-        return newEdges;
-      });
+      setEdges((eds) =>
+        addEdge({ ...params, id, style: { stroke: 'hsl(220, 15%, 35%)' } }, eds)
+      );
     },
     [boardId, store, setEdges]
   );
@@ -310,12 +306,11 @@ const BoardCanvas = () => {
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
-          onConnectStart={(_, p) => console.log('[DEBUG] connectStart', p)}
-          onConnectEnd={(e) => console.log('[DEBUG] connectEnd', e)}
           onEdgeClick={onEdgeClick}
           onNodeDragStop={onNodeDragStop}
           onNodeClick={onNodeClick}
           onPaneClick={onPaneClick}
+          connectionMode="loose"
           nodeTypes={nodeTypes}
           fitView
           snapToGrid
