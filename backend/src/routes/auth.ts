@@ -3,7 +3,6 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { v4 as uuidv4 } from 'uuid';
 import { OAuth2Client } from 'google-auth-library';
-import nodeFetch from 'node-fetch';
 import { pool } from '../db';
 
 const GOOGLE_CLIENT = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
@@ -240,10 +239,10 @@ export async function authRoutes(fastify: FastifyInstance): Promise<void> {
     return reply.send({ access_token, refresh_token, user: sanitizeUser(user) });
   });
 
+  // Yandex OAuth — redirect to Yandex
   fastify.get('/auth/yandex', async (_request: FastifyRequest, reply: FastifyReply) => {
     const clientId = process.env.YANDEX_CLIENT_ID;
-    const backendUrl = process.env.BACKEND_URL || 'http://localhost:3001';
-    const redirectUri = process.env.YANDEX_REDIRECT_URI || (backendUrl + '/auth/yandex/callback');
+    const redirectUri = process.env.YANDEX_REDIRECT_URI || 'https://threadline.tigerapps.pro/api/auth/yandex/callback';
     if (!clientId) {
       return reply.code(500).send({ error: 'Yandex OAuth not configured' });
     }
@@ -251,10 +250,12 @@ export async function authRoutes(fastify: FastifyInstance): Promise<void> {
       response_type: 'code',
       client_id: clientId,
       redirect_uri: redirectUri,
+      force_confirm: 'no',
     });
     return reply.redirect(302, 'https://oauth.yandex.ru/authorize?' + params.toString());
   });
 
+  // Yandex OAuth — callback
   fastify.get('/auth/yandex/callback', async (request: FastifyRequest, reply: FastifyReply) => {
     const { code, error } = request.query as { code?: string; error?: string };
     if (error || !code) {
@@ -262,14 +263,15 @@ export async function authRoutes(fastify: FastifyInstance): Promise<void> {
     }
     const clientId = process.env.YANDEX_CLIENT_ID;
     const clientSecret = process.env.YANDEX_CLIENT_SECRET;
-    const backendUrl = process.env.BACKEND_URL || 'http://localhost:3001';
-    const redirectUri = process.env.YANDEX_REDIRECT_URI || (backendUrl + '/auth/yandex/callback');
+    const redirectUri = process.env.YANDEX_REDIRECT_URI || 'https://threadline.tigerapps.pro/api/auth/yandex/callback';
     if (!clientId || !clientSecret) {
       return reply.redirect(302, FRONTEND_URL + '/login?error=yandex_not_configured');
     }
+
+    // Exchange code for token
     let tokenData: { access_token?: string; error?: string };
     try {
-      const tokenRes = await nodeFetch('https://oauth.yandex.ru/token', {
+      const tokenRes = await fetch('https://oauth.yandex.ru/token', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: new URLSearchParams({
@@ -284,25 +286,31 @@ export async function authRoutes(fastify: FastifyInstance): Promise<void> {
     } catch {
       return reply.redirect(302, FRONTEND_URL + '/login?error=yandex_token_exchange_failed');
     }
+
     if (!tokenData.access_token) {
       return reply.redirect(302, FRONTEND_URL + '/login?error=yandex_no_token');
     }
+
+    // Get user info from Yandex
     let yandexUser: { id: string; default_email?: string; real_name?: string; display_name?: string; default_avatar_id?: string };
     try {
-      const userRes = await nodeFetch('https://login.yandex.ru/info?format=json', {
+      const userRes = await fetch('https://login.yandex.ru/info?format=json', {
         headers: { Authorization: 'OAuth ' + tokenData.access_token },
       });
       yandexUser = await userRes.json() as typeof yandexUser;
     } catch {
       return reply.redirect(302, FRONTEND_URL + '/login?error=yandex_userinfo_failed');
     }
+
     const email = yandexUser.default_email;
     if (!email) {
       return reply.redirect(302, FRONTEND_URL + '/login?error=yandex_no_email');
     }
+
     const avatarUrl = yandexUser.default_avatar_id
       ? 'https://avatars.yandex.net/get-yapic/' + yandexUser.default_avatar_id + '/islands-200'
       : null;
+
     const user = await upsertOAuthUser({
       email,
       display_name: yandexUser.real_name || yandexUser.display_name || email.split('@')[0],
@@ -310,15 +318,19 @@ export async function authRoutes(fastify: FastifyInstance): Promise<void> {
       oauth_provider: 'yandex',
       oauth_id: yandexUser.id,
     });
+
     const access_token = generateAccessToken(user.id);
     const refresh_token = await createSession(user.id);
+
     reply.setCookie('refresh_token', refresh_token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: true,
       sameSite: 'lax',
       path: '/',
       maxAge: 60 * 60 * 24 * REFRESH_TOKEN_EXPIRES_DAYS,
     });
+
+    // Redirect back to frontend with tokens
     const redirectParams = new URLSearchParams({ access_token, refresh_token });
     return reply.redirect(302, FRONTEND_URL + '/login/callback?' + redirectParams.toString());
   });
