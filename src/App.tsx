@@ -7,6 +7,7 @@ import { AuthProvider } from "@/context/AuthContext";
 import { useAuth } from "@/hooks/useAuth";
 import Workspace from "./pages/Workspace";
 import LoginPage from "./pages/LoginPage";
+import SettingsPage from "./pages/SettingsPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -66,6 +67,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <Workspace />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/settings"
+              element={
+                <ProtectedRoute>
+                  <SettingsPage />
                 </ProtectedRoute>
               }
             />

@@ -1,7 +1,12 @@
 import { useRef, useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useWorkspaceStore } from '@/store/useWorkspaceStore';
 import { CreateBoardDialog } from '@/components/CreateBoardDialog';
-import { Search, Plus, Pencil, Check, X, MoreHorizontal, Pin, PinOff, Share2, Download, Trash2 } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
+import {
+  Search, Plus, Pencil, Check, X, MoreHorizontal, Pin, PinOff,
+  Share2, Download, Trash2, Settings, LogOut, ChevronUp,
+} from 'lucide-react';
 import { toast } from 'sonner';
 
 interface SidebarProps {
@@ -12,12 +17,15 @@ interface SidebarProps {
 const BOARD_COLORS = ['#10B981', '#3B82F6', '#A855F7', '#F97316', '#EF4444', '#EAB308', '#06B6D4', '#0EA5E9'];
 
 export function Sidebar({ activeBoardId, onSelectBoard }: SidebarProps) {
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
   const [search, setSearch] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState('');
   const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
   const editInputRef = useRef<HTMLInputElement>(null);
   const store = useWorkspaceStore();
 
@@ -48,6 +56,12 @@ export function Sidebar({ activeBoardId, onSelectBoard }: SidebarProps) {
 
   const cancelEdit = () => {
     setEditingId(null);
+  };
+
+  const handleLogout = async () => {
+    setUserMenuOpen(false);
+    await logout();
+    toast.success('Вы вышли из аккаунта');
   };
 
   const togglePin = (boardId: string, isPinned: boolean | undefined, e: React.MouseEvent) => {
@@ -100,12 +114,22 @@ export function Sidebar({ activeBoardId, onSelectBoard }: SidebarProps) {
     setConfirmDeleteId(null);
   };
 
+  // Close menus on outside click
   useEffect(() => {
-    if (!menuOpenId) return;
-    const handler = () => { setMenuOpenId(null); setConfirmDeleteId(null); };
+    if (!menuOpenId && !userMenuOpen) return;
+    const handler = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest('.board-menu-container')) {
+        setMenuOpenId(null);
+        setConfirmDeleteId(null);
+      }
+      if (!target.closest('.user-menu-container')) {
+        setUserMenuOpen(false);
+      }
+    };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
-  }, [menuOpenId]);
+  }, [menuOpenId, userMenuOpen]);
 
   return (
     <div className="w-[252px] flex flex-col shrink-0 z-20 relative" style={{ background: 'hsl(240, 25%, 6%)', borderRight: '1px solid rgba(255,255,255,0.05)' }}>
@@ -219,7 +243,7 @@ export function Sidebar({ activeBoardId, onSelectBoard }: SidebarProps) {
                   )}
 
                   {/* Three-dot menu button */}
-                  <div className="relative" onClick={(e) => e.stopPropagation()}>
+                  <div className="relative board-menu-container" onClick={(e) => e.stopPropagation()}>
                     <button
                       className="opacity-0 group-hover/board:opacity-100 w-[18px] h-[18px] flex items-center justify-center rounded-[4px] shrink-0 transition-all"
                       style={{ color: 'hsl(255,8%,40%)' }}
@@ -235,10 +259,10 @@ export function Sidebar({ activeBoardId, onSelectBoard }: SidebarProps) {
                       <MoreHorizontal className="w-[11px] h-[11px]" />
                     </button>
 
-                    {/* Dropdown menu */}
+                    {/* Dropdown menu — opens BELOW the button to avoid clipping */}
                     {isMenuOpen && (
                       <div
-                        className="absolute left-full top-0 ml-1 z-50 min-w-[170px] rounded-[9px] py-1 overflow-hidden"
+                        className="absolute top-full right-0 mt-1 z-50 min-w-[170px] rounded-[9px] py-1"
                         style={{
                           background: 'hsl(240, 25%, 9%)',
                           border: '1px solid rgba(255,255,255,0.1)',
@@ -323,15 +347,53 @@ export function Sidebar({ activeBoardId, onSelectBoard }: SidebarProps) {
         Новый борд
       </button>
 
-      {/* User */}
-      <div className="px-3.5 py-2.5 flex items-center gap-[9px]" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-        <div className="w-7 h-7 rounded-[7px] flex items-center justify-center text-[11px] font-bold text-white shrink-0" style={{ background: 'linear-gradient(135deg, #A855F7, #10B981)', boxShadow: '0 0 10px rgba(168,85,247,0.2)' }}>
-          U
-        </div>
-        <div>
-          <div className="text-[11.5px] font-semibold" style={{ color: 'hsl(260, 20%, 92%)' }}>User</div>
-          <div className="text-[9.5px]" style={{ color: 'hsl(255,8%,40%)' }}>user@threadline.io</div>
-        </div>
+      {/* User section */}
+      <div className="relative user-menu-container" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+        <button
+          onClick={() => setUserMenuOpen(!userMenuOpen)}
+          className="w-full px-3.5 py-2.5 flex items-center gap-[9px] cursor-pointer transition-all text-left"
+          onMouseEnter={(e) => { e.currentTarget.style.background = 'hsl(240, 20%, 10%)'; }}
+          onMouseLeave={(e) => { if (!userMenuOpen) e.currentTarget.style.background = ''; }}
+          style={{ background: userMenuOpen ? 'hsl(240, 20%, 10%)' : undefined }}
+        >
+          {user?.avatar_url ? (
+            <img src={user.avatar_url} alt={(user?.display_name || 'User')} className="w-7 h-7 rounded-[7px] shrink-0 object-cover" />
+          ) : (
+            <div className="w-7 h-7 rounded-[7px] flex items-center justify-center text-[11px] font-bold text-white shrink-0" style={{ background: 'linear-gradient(135deg, #A855F7, #10B981)', boxShadow: '0 0 10px rgba(168,85,247,0.2)' }}>
+              {(user?.display_name || 'User').charAt(0).toUpperCase()}
+            </div>
+          )}
+          <div className="flex-1 min-w-0">
+            <div className="text-[11.5px] font-semibold truncate" style={{ color: 'hsl(260, 20%, 92%)' }}>{user?.display_name || 'User'}</div>
+            <div className="text-[9.5px] truncate" style={{ color: 'hsl(255,8%,40%)' }}>{user?.email || 'user@threadline.io'}</div>
+          </div>
+          <ChevronUp className={"w-3 h-3 shrink-0 transition-transform " + (userMenuOpen ? '' : 'rotate-180')} style={{ color: 'hsl(255,8%,40%)' }} />
+        </button>
+
+        {/* User dropdown */}
+        {userMenuOpen && (
+          <div
+            className="absolute bottom-full left-[7px] right-[7px] mb-1 z-50 rounded-[9px] py-1"
+            style={{
+              background: 'hsl(240, 25%, 9%)',
+              border: '1px solid rgba(255,255,255,0.1)',
+              boxShadow: '0 -8px 32px rgba(0,0,0,0.6)',
+            }}
+          >
+            <MenuBtn
+              icon={<Settings className="w-[11px] h-[11px]" />}
+              label="Настройки"
+              onClick={() => { setUserMenuOpen(false); navigate('/settings'); }}
+            />
+            <div className="h-px mx-2 my-1" style={{ background: 'rgba(255,255,255,0.06)' }} />
+            <MenuBtn
+              icon={<LogOut className="w-[11px] h-[11px]" />}
+              label="Выйти"
+              danger
+              onClick={handleLogout}
+            />
+          </div>
+        )}
       </div>
 
       <CreateBoardDialog open={dialogOpen} onOpenChange={setDialogOpen} onCreated={onSelectBoard} />
