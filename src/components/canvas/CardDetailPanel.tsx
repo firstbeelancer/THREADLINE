@@ -43,37 +43,52 @@ export function CardDetailPanel({ card, onClose, onUpdate, onDelete }: CardDetai
     onUpdate({ tags: card.tags.filter((t) => t !== tag) });
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const url = URL.createObjectURL(file);
-    const img = new window.Image();
-    img.onload = () => {
-      const aspectRatio = img.width / img.height;
-      const newWidth = card.width;
-      const newHeight = Math.round(newWidth / aspectRatio);
-      onUpdate({
-        content: { ...card.content, imageUrl: url, imageWidth: img.width, imageHeight: img.height },
-        width: newWidth,
-        height: newHeight,
-      });
-    };
-    img.src = url;
+    // Show preview immediately while uploading
+    const localUrl = URL.createObjectURL(file);
+    onUpdate({ content: { ...card.content, imageUrl: localUrl, uploading: true } });
+    try {
+      const form = new FormData();
+      form.append('file', file);
+      const res = await fetch('/api/upload', { method: 'POST', body: form });
+      if (res.ok) {
+        const data = await res.json();
+        const img = new window.Image();
+        img.onload = () => {
+          const aspectRatio = img.width / img.height;
+          onUpdate({
+            content: { ...card.content, imageUrl: data.url, uploading: false, imageWidth: img.width, imageHeight: img.height },
+            width: card.width,
+            height: Math.round(card.width / aspectRatio),
+          });
+        };
+        img.src = data.url;
+      } else {
+        // Fallback to local blob if S3 fails
+        const img = new window.Image();
+        img.onload = () => onUpdate({ content: { ...card.content, imageUrl: localUrl, uploading: false } });
+        img.src = localUrl;
+      }
+    } catch {
+      onUpdate({ content: { ...card.content, imageUrl: localUrl, uploading: false } });
+    }
   };
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const url = URL.createObjectURL(file);
-    onUpdate({
-      content: {
-        ...card.content,
-        fileUrl: url,
-        fileName: file.name,
-        fileSize: formatFileSize(file.size),
-        fileMime: file.type,
-      },
-    });
+    onUpdate({ content: { ...card.content, fileName: file.name, fileSize: formatFileSize(file.size), uploading: true } });
+    try {
+      const form = new FormData();
+      form.append('file', file);
+      const res = await fetch('/api/upload', { method: 'POST', body: form });
+      const url = res.ok ? (await res.json()).url : URL.createObjectURL(file);
+      onUpdate({ content: { ...card.content, fileUrl: url, fileName: file.name, fileSize: formatFileSize(file.size), fileMime: file.type, uploading: false } });
+    } catch {
+      onUpdate({ content: { ...card.content, fileUrl: URL.createObjectURL(file), fileName: file.name, fileSize: formatFileSize(file.size), fileMime: file.type, uploading: false } });
+    }
   };
 
   const handleHtmlFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
