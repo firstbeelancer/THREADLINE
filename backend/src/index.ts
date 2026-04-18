@@ -3,6 +3,7 @@ import cors from '@fastify/cors';
 import cookie from '@fastify/cookie';
 import { initDB } from './db';
 import { authRoutes } from './routes/auth';
+import { uploadRoutes } from './routes/upload';
 
 const server = Fastify({
   logger: {
@@ -43,6 +44,7 @@ async function start(): Promise<void> {
 
   // Register auth routes
   await server.register(authRoutes);
+  await server.register(uploadRoutes);
 
   // Initialize database
   await initDB();
