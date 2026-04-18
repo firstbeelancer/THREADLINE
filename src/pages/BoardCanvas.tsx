@@ -361,7 +361,7 @@ const BoardCanvas = () => {
           onNodeClick={onNodeClick}
           onPaneClick={onPaneClick}
           nodeTypes={nodeTypes}
-          connectionMode={ConnectionMode.Strict}
+          connectionMode={ConnectionMode.Loose}
           deleteKeyCode={['Delete', 'Backspace']}
           fitView
           snapToGrid
