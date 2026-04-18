@@ -133,45 +133,74 @@ export const ArtifactCardNode = memo(({ data, id, selected }: NodeProps) => {
         onResizeEnd={onResizeEnd}
       />
 
+      {/* Bidirectional handles: source (visible) + target (transparent, same size, on top) */}
+      {/* Top */}
       <Handle
         id="top"
         type="source"
         position={Position.Top}
         isConnectable={true}
-        isConnectableStart={true}
-        isConnectableEnd={true}
         className="!w-3.5 !h-3.5 !rounded-full !border-2 !border-white/30 !transition-all hover:!scale-150 hover:!border-cyan-300"
-        style={{ background: 'rgba(34,211,238,0.6)', top: -7, left: '50%', transform: 'translateX(-50%)' }}
+        style={{ background: 'rgba(34,211,238,0.6)', top: -7, left: '50%', transform: 'translateX(-50%)', zIndex: 2 }}
       />
+      <Handle
+        id="top-in"
+        type="target"
+        position={Position.Top}
+        isConnectable={true}
+        className="!w-3 !h-3 !rounded-full"
+        style={{ background: 'transparent', border: 'none', top: -6, left: '50%', transform: 'translateX(-50%)', zIndex: 1 }}
+      />
+      {/* Bottom */}
       <Handle
         id="bottom"
         type="source"
         position={Position.Bottom}
         isConnectable={true}
-        isConnectableStart={true}
-        isConnectableEnd={true}
         className="!w-3.5 !h-3.5 !rounded-full !border-2 !border-white/30 !transition-all hover:!scale-150 hover:!border-cyan-300"
-        style={{ background: 'rgba(34,211,238,0.6)', bottom: -7, left: '50%', transform: 'translateX(-50%)' }}
+        style={{ background: 'rgba(34,211,238,0.6)', bottom: -7, left: '50%', transform: 'translateX(-50%)', zIndex: 2 }}
       />
+      <Handle
+        id="bottom-in"
+        type="target"
+        position={Position.Bottom}
+        isConnectable={true}
+        className="!w-3 !h-3 !rounded-full"
+        style={{ background: 'transparent', border: 'none', bottom: -6, left: '50%', transform: 'translateX(-50%)', zIndex: 1 }}
+      />
+      {/* Left */}
       <Handle
         id="left"
         type="source"
         position={Position.Left}
         isConnectable={true}
-        isConnectableStart={true}
-        isConnectableEnd={true}
         className="!w-3.5 !h-3.5 !rounded-full !border-2 !border-white/30 !transition-all hover:!scale-150 hover:!border-cyan-300"
-        style={{ background: 'rgba(34,211,238,0.6)', left: -7, top: '50%', transform: 'translateY(-50%)' }}
+        style={{ background: 'rgba(34,211,238,0.6)', left: -7, top: '50%', transform: 'translateY(-50%)', zIndex: 2 }}
       />
+      <Handle
+        id="left-in"
+        type="target"
+        position={Position.Left}
+        isConnectable={true}
+        className="!w-3 !h-3 !rounded-full"
+        style={{ background: 'transparent', border: 'none', left: -6, top: '50%', transform: 'translateY(-50%)', zIndex: 1 }}
+      />
+      {/* Right */}
       <Handle
         id="right"
         type="source"
         position={Position.Right}
         isConnectable={true}
-        isConnectableStart={true}
-        isConnectableEnd={true}
         className="!w-3.5 !h-3.5 !rounded-full !border-2 !border-white/30 !transition-all hover:!scale-150 hover:!border-cyan-300"
-        style={{ background: 'rgba(34,211,238,0.6)', right: -7, top: '50%', transform: 'translateY(-50%)' }}
+        style={{ background: 'rgba(34,211,238,0.6)', right: -7, top: '50%', transform: 'translateY(-50%)', zIndex: 2 }}
+      />
+      <Handle
+        id="right-in"
+        type="target"
+        position={Position.Right}
+        isConnectable={true}
+        className="!w-3 !h-3 !rounded-full"
+        style={{ background: 'transparent', border: 'none', right: -6, top: '50%', transform: 'translateY(-50%)', zIndex: 1 }}
       />
 
       {/* Label bar */}
