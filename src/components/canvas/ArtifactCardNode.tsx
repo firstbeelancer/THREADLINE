@@ -133,42 +133,26 @@ export const ArtifactCardNode = memo(({ data, id, selected }: NodeProps) => {
         onResizeEnd={onResizeEnd}
       />
 
-      {/* Bidirectional: cyan source + pink target on each side */}
-      {/* Top */}
+      {/* Source on all sides (cyan) + Target only on left/right (pink) */}
+      {/* Top - source only */}
       <Handle
         id="top"
         type="source"
         position={Position.Top}
         isConnectable={true}
         className="!w-3 !h-3 !rounded-full !border-2 !border-cyan-300/40 !transition-all hover:!scale-150 hover:!border-cyan-300"
-        style={{ background: 'rgba(34,211,238,0.8)', top: -6, left: '40%', transform: 'translateX(-50%)' }}
+        style={{ background: 'rgba(34,211,238,0.8)', top: -6, left: '50%', transform: 'translateX(-50%)' }}
       />
-      <Handle
-        id="top-in"
-        type="target"
-        position={Position.Top}
-        isConnectable={true}
-        className="!w-3 !h-3 !rounded-full !border-2 !border-pink-300/40 !transition-all hover:!scale-150 hover:!border-pink-300"
-        style={{ background: 'rgba(236,72,153,0.8)', top: -6, left: '60%', transform: 'translateX(-50%)' }}
-      />
-      {/* Bottom */}
+      {/* Bottom - source only */}
       <Handle
         id="bottom"
         type="source"
         position={Position.Bottom}
         isConnectable={true}
         className="!w-3 !h-3 !rounded-full !border-2 !border-cyan-300/40 !transition-all hover:!scale-150 hover:!border-cyan-300"
-        style={{ background: 'rgba(34,211,238,0.8)', bottom: -6, left: '40%', transform: 'translateX(-50%)' }}
+        style={{ background: 'rgba(34,211,238,0.8)', bottom: -6, left: '50%', transform: 'translateX(-50%)' }}
       />
-      <Handle
-        id="bottom-in"
-        type="target"
-        position={Position.Bottom}
-        isConnectable={true}
-        className="!w-3 !h-3 !rounded-full !border-2 !border-pink-300/40 !transition-all hover:!scale-150 hover:!border-pink-300"
-        style={{ background: 'rgba(236,72,153,0.8)', bottom: -6, left: '60%', transform: 'translateX(-50%)' }}
-      />
-      {/* Left */}
+      {/* Left - source + target */}
       <Handle
         id="left"
         type="source"
@@ -185,7 +169,7 @@ export const ArtifactCardNode = memo(({ data, id, selected }: NodeProps) => {
         className="!w-3 !h-3 !rounded-full !border-2 !border-pink-300/40 !transition-all hover:!scale-150 hover:!border-pink-300"
         style={{ background: 'rgba(236,72,153,0.8)', left: -6, top: '60%', transform: 'translateY(-50%)' }}
       />
-      {/* Right */}
+      {/* Right - source + target */}
       <Handle
         id="right"
         type="source"
