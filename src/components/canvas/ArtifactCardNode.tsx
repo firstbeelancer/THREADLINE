@@ -138,6 +138,8 @@ export const ArtifactCardNode = memo(({ data, id, selected }: NodeProps) => {
         type="source"
         position={Position.Top}
         isConnectable={true}
+        isConnectableStart={true}
+        isConnectableEnd={true}
         className="!w-3.5 !h-3.5 !rounded-full !border-2 !border-white/30 !transition-all hover:!scale-150 hover:!border-cyan-300"
         style={{ background: 'rgba(34,211,238,0.6)', top: -7, left: '50%', transform: 'translateX(-50%)' }}
       />
@@ -146,6 +148,8 @@ export const ArtifactCardNode = memo(({ data, id, selected }: NodeProps) => {
         type="source"
         position={Position.Bottom}
         isConnectable={true}
+        isConnectableStart={true}
+        isConnectableEnd={true}
         className="!w-3.5 !h-3.5 !rounded-full !border-2 !border-white/30 !transition-all hover:!scale-150 hover:!border-cyan-300"
         style={{ background: 'rgba(34,211,238,0.6)', bottom: -7, left: '50%', transform: 'translateX(-50%)' }}
       />
@@ -154,6 +158,8 @@ export const ArtifactCardNode = memo(({ data, id, selected }: NodeProps) => {
         type="source"
         position={Position.Left}
         isConnectable={true}
+        isConnectableStart={true}
+        isConnectableEnd={true}
         className="!w-3.5 !h-3.5 !rounded-full !border-2 !border-white/30 !transition-all hover:!scale-150 hover:!border-cyan-300"
         style={{ background: 'rgba(34,211,238,0.6)', left: -7, top: '50%', transform: 'translateY(-50%)' }}
       />
@@ -162,6 +168,8 @@ export const ArtifactCardNode = memo(({ data, id, selected }: NodeProps) => {
         type="source"
         position={Position.Right}
         isConnectable={true}
+        isConnectableStart={true}
+        isConnectableEnd={true}
         className="!w-3.5 !h-3.5 !rounded-full !border-2 !border-white/30 !transition-all hover:!scale-150 hover:!border-cyan-300"
         style={{ background: 'rgba(34,211,238,0.6)', right: -7, top: '50%', transform: 'translateY(-50%)' }}
       />
