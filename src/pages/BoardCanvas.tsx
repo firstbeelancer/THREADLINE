@@ -97,6 +97,9 @@ const BoardCanvas = () => {
     [boardId, store, setEdges]
   );
 
+  // Allow any handle-to-any-handle connection (bidirectional)
+  const isValidConnection = useCallback(() => true, []);
+
   // Update edge styles when selection changes
   useEffect(() => {
     setEdges((eds) =>
@@ -362,6 +365,7 @@ const BoardCanvas = () => {
           onPaneClick={onPaneClick}
           nodeTypes={nodeTypes}
           connectionMode={ConnectionMode.Loose}
+          isValidConnection={isValidConnection}
           deleteKeyCode={['Delete', 'Backspace']}
           fitView
           snapToGrid

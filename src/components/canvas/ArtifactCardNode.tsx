@@ -133,73 +133,37 @@ export const ArtifactCardNode = memo(({ data, id, selected }: NodeProps) => {
         onResizeEnd={onResizeEnd}
       />
 
-      {/* Top handles */}
       <Handle
         id="top"
         type="source"
         position={Position.Top}
         isConnectable={true}
-        className="!w-3.5 !h-3.5 !rounded-full !border-2 !border-white/30 !transition-all hover:!scale-150 hover:!border-cyan-300"
-        style={{ background: 'rgba(34,211,238,0.6)', top: -7, left: '45%', transform: 'translateX(-50%)' }}
+        className="!w-3.5 !h-3.5 !rounded-full !border-2 !border-white/30 !transition-all hover:!scale-150 hover:!border-cyan-300 !z-50"
+        style={{ background: 'rgba(34,211,238,0.6)', top: -7, left: '50%', transform: 'translateX(-50%)' }}
       />
-      <Handle
-        id="top-target"
-        type="target"
-        position={Position.Top}
-        isConnectable={true}
-        className="!w-3.5 !h-3.5 !rounded-full !border-2 !border-white/30 !transition-all hover:!scale-150 hover:!border-cyan-300"
-        style={{ background: 'rgba(34,211,238,0.6)', top: -7, left: '55%', transform: 'translateX(-50%)' }}
-      />
-      {/* Bottom handles */}
       <Handle
         id="bottom"
         type="source"
         position={Position.Bottom}
         isConnectable={true}
-        className="!w-3.5 !h-3.5 !rounded-full !border-2 !border-white/30 !transition-all hover:!scale-150 hover:!border-cyan-300"
-        style={{ background: 'rgba(34,211,238,0.6)', bottom: -7, left: '45%', transform: 'translateX(-50%)' }}
+        className="!w-3.5 !h-3.5 !rounded-full !border-2 !border-white/30 !transition-all hover:!scale-150 hover:!border-cyan-300 !z-50"
+        style={{ background: 'rgba(34,211,238,0.6)', bottom: -7, left: '50%', transform: 'translateX(-50%)' }}
       />
-      <Handle
-        id="bottom-target"
-        type="target"
-        position={Position.Bottom}
-        isConnectable={true}
-        className="!w-3.5 !h-3.5 !rounded-full !border-2 !border-white/30 !transition-all hover:!scale-150 hover:!border-cyan-300"
-        style={{ background: 'rgba(34,211,238,0.6)', bottom: -7, left: '55%', transform: 'translateX(-50%)' }}
-      />
-      {/* Left handles */}
       <Handle
         id="left"
         type="source"
         position={Position.Left}
         isConnectable={true}
-        className="!w-3.5 !h-3.5 !rounded-full !border-2 !border-white/30 !transition-all hover:!scale-150 hover:!border-cyan-300"
-        style={{ background: 'rgba(34,211,238,0.6)', left: -7, top: '45%', transform: 'translateY(-50%)' }}
+        className="!w-3.5 !h-3.5 !rounded-full !border-2 !border-white/30 !transition-all hover:!scale-150 hover:!border-cyan-300 !z-50"
+        style={{ background: 'rgba(34,211,238,0.6)', left: -7, top: '50%', transform: 'translateY(-50%)' }}
       />
-      <Handle
-        id="left-target"
-        type="target"
-        position={Position.Left}
-        isConnectable={true}
-        className="!w-3.5 !h-3.5 !rounded-full !border-2 !border-white/30 !transition-all hover:!scale-150 hover:!border-cyan-300"
-        style={{ background: 'rgba(34,211,238,0.6)', left: -7, top: '55%', transform: 'translateY(-50%)' }}
-      />
-      {/* Right handles */}
       <Handle
         id="right"
         type="source"
         position={Position.Right}
         isConnectable={true}
-        className="!w-3.5 !h-3.5 !rounded-full !border-2 !border-white/30 !transition-all hover:!scale-150 hover:!border-cyan-300"
-        style={{ background: 'rgba(34,211,238,0.6)', right: -7, top: '45%', transform: 'translateY(-50%)' }}
-      />
-      <Handle
-        id="right-target"
-        type="target"
-        position={Position.Right}
-        isConnectable={true}
-        className="!w-3.5 !h-3.5 !rounded-full !border-2 !border-white/30 !transition-all hover:!scale-150 hover:!border-cyan-300"
-        style={{ background: 'rgba(34,211,238,0.6)', right: -7, top: '55%', transform: 'translateY(-50%)' }}
+        className="!w-3.5 !h-3.5 !rounded-full !border-2 !border-white/30 !transition-all hover:!scale-150 hover:!border-cyan-300 !z-50"
+        style={{ background: 'rgba(34,211,238,0.6)', right: -7, top: '50%', transform: 'translateY(-50%)' }}
       />
 
       {/* Label bar */}
